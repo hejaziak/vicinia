@@ -1,14 +1,14 @@
 package main
 
 import (
-    "log"
-    "net/http"
-    r "Vicinia/Routes"
+	routes "Vicinia/Routes"
+	"log"
+	"net/http"
 )
 
 func main() {
 
-    router := r.NewRouter()
+	router := routes.NewRouter()
 
-    log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8080", router))
 }

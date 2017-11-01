@@ -6,12 +6,13 @@ import (
 	"log"
 	"net/http"
 
+	structures "Vicinia/Structures"
+
 	"github.com/gorilla/mux"
+	"github.com/kr/pretty"
 	"github.com/satori/go.uuid"
 	"golang.org/x/net/context"
 	"googlemaps.github.io/maps"
-	s "Vicinia/Structures"
-
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -19,9 +20,9 @@ func Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func TodoIndex(w http.ResponseWriter, r *http.Request) {
-	todos := s.Todos{
-		s.Todo{Name: "Write presentation"},
-		s.Todo{Name: "Host meetup"},
+	todos := structures.Todos{
+		structures.Todo{Name: "Write presentation"},
+		structures.Todo{Name: "Host meetup"},
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -40,7 +41,7 @@ func TodoShow(w http.ResponseWriter, r *http.Request) {
 
 func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 
-	welcomeMessage := s.WelcomeStruct{
+	welcomeMessage := structures.WelcomeStruct{
 		Message: "Welcome ,where do you want to go ?",
 		Uuid:    uuid.NewV1(),
 	}
@@ -68,7 +69,45 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("fatal error: %s", err)
 	}
 
-	if err := json.NewEncoder(w).Encode(res); err != nil {
+	output := SimplifyList(res.Results)
+
+	if err := json.NewEncoder(w).Encode(output); err != nil {
 		panic(err)
 	}
+}
+
+func SimplifyList(input []maps.PlacesSearchResult) []structures.PlaceListEntity {
+	output := make([]structures.PlaceListEntity, 5)
+
+	for i := 0; i < 5; i++ {
+		if i >= len(input) {
+			break
+		}
+
+		c, err := maps.NewClient(maps.WithAPIKey("AIzaSyBZwHSODUVFhzMcAEabT-BOw2_SkOrYEWo"))
+		if err != nil {
+			log.Fatalf("fatal error: %s", err)
+		}
+
+		req := &maps.DistanceMatrixRequest{
+			Origins:      []string{"29.985352,31.279194"},
+			Destinations: []string{"place_id:" + input[i].PlaceID},
+			Units:        "metric",
+		}
+
+		res, err := c.DistanceMatrix(context.Background(), req)
+		if err != nil {
+			log.Fatalf("fatal error: %s", err)
+		}
+
+		pretty.Println(res)
+
+		output[i] = structures.PlaceListEntity{
+			Name:     input[i].Name,
+			Distance: res.Rows[0].Elements[0].Distance.HumanReadable,
+			Rating:   input[i].Rating,
+		}
+	}
+
+	return output
 }
