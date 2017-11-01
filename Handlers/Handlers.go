@@ -1,10 +1,12 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+
+	structures "Vicinia/Structures"
 
 	"github.com/gorilla/mux"
 	"github.com/kr/pretty"
@@ -18,9 +20,9 @@ func Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func TodoIndex(w http.ResponseWriter, r *http.Request) {
-	todos := Todos{
-		Todo{Name: "Write presentation"},
-		Todo{Name: "Host meetup"},
+	todos := structures.Todos{
+		structures.Todo{Name: "Write presentation"},
+		structures.Todo{Name: "Host meetup"},
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -39,7 +41,7 @@ func TodoShow(w http.ResponseWriter, r *http.Request) {
 
 func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 
-	welcomeMessage := WelcomeStruct{
+	welcomeMessage := structures.WelcomeStruct{
 		Message: "Welcome ,where do you want to go ?",
 		Uuid:    uuid.NewV1(),
 	}
@@ -74,8 +76,8 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func SimplifyList(input []maps.PlacesSearchResult) []PlaceListEntity {
-	output := make([]PlaceListEntity, 5)
+func SimplifyList(input []maps.PlacesSearchResult) []structures.PlaceListEntity {
+	output := make([]structures.PlaceListEntity, 5)
 
 	for i := 0; i < 5; i++ {
 		if i >= len(input) {
@@ -100,7 +102,7 @@ func SimplifyList(input []maps.PlacesSearchResult) []PlaceListEntity {
 
 		pretty.Println(res)
 
-		output[i] = PlaceListEntity{
+		output[i] = structures.PlaceListEntity{
 			Name:     input[i].Name,
 			Distance: res.Rows[0].Elements[0].Distance.HumanReadable,
 			Rating:   input[i].Rating,

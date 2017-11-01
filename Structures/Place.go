@@ -1,4 +1,4 @@
-package main
+package structures
 
 type Place struct {
 	Name         string  `json:"name"`
