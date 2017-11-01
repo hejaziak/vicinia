@@ -1,0 +1,19 @@
+hash: 518828ac83891ee28105db8220401527c4d9caf2790da14c807a6fb919fa1883
+updated: 2017-11-01T22:33:37.263653482+02:00
+imports:
+- name: github.com/gorilla/context
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+- name: github.com/gorilla/mux
+  version: 7625a85c14e615274a4ee4bc8654f72310a563e4
+- name: github.com/satori/go.uuid
+  version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
+- name: golang.org/x/net
+  version: c73622c77280266305273cb545f54516ced95b93
+  subpackages:
+  - context
+  - context/ctxhttp
+- name: googlemaps.github.io/maps
+  version: da8b5a37599fe526eb41b84489aa6c188c5c03dc
+  subpackages:
+  - internal
+testImports: []
