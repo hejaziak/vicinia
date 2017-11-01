@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/kr/pretty"
 	"github.com/satori/go.uuid"
 	"golang.org/x/net/context"
 	"googlemaps.github.io/maps"
@@ -66,7 +67,45 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("fatal error: %s", err)
 	}
 
-	if err := json.NewEncoder(w).Encode(res); err != nil {
+	output := SimplifyList(res.Results)
+
+	if err := json.NewEncoder(w).Encode(output); err != nil {
 		panic(err)
 	}
+}
+
+func SimplifyList(input []maps.PlacesSearchResult) []PlaceListEntity {
+	output := make([]PlaceListEntity, 5)
+
+	for i := 0; i < 5; i++ {
+		if i >= len(input) {
+			break
+		}
+
+		c, err := maps.NewClient(maps.WithAPIKey("AIzaSyBZwHSODUVFhzMcAEabT-BOw2_SkOrYEWo"))
+		if err != nil {
+			log.Fatalf("fatal error: %s", err)
+		}
+
+		req := &maps.DistanceMatrixRequest{
+			Origins:      []string{"29.985352,31.279194"},
+			Destinations: []string{"place_id:" + input[i].PlaceID},
+			Units:        "metric",
+		}
+
+		res, err := c.DistanceMatrix(context.Background(), req)
+		if err != nil {
+			log.Fatalf("fatal error: %s", err)
+		}
+
+		pretty.Println(res)
+
+		output[i] = PlaceListEntity{
+			Name:     input[i].Name,
+			Distance: res.Rows[0].Elements[0].Distance.HumanReadable,
+			Rating:   input[i].Rating,
+		}
+	}
+
+	return output
 }
