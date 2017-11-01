@@ -1,7 +1,9 @@
-package main
+package routes
 
-import "net/http"
-
+import (
+    "net/http"
+    h "Vicinia/Handlers"
+)
 type Route struct {
     Name        string
     Method      string
@@ -16,30 +18,30 @@ var routes = Routes{
         "Index",
         "GET",
         "/",
-        Index,
+        h.Index,
     },
     Route{
         "TodoIndex",
         "GET",
         "/todos",
-        TodoIndex,
+        h.TodoIndex,
     },
     Route{
         "TodoShow",
         "GET",
         "/todos/{todoId}",
-        TodoShow,
+        h.TodoShow,
     },
     Route{
         "Welcome",
         "GET",
         "/welcome",
-        WelcomeHandler,
+        h.WelcomeHandler,
     },
     Route{
         "chat",
         "GET",
         "/chat",
-        ListHandler,
+        h.ListHandler,
     },
 }
