@@ -1,7 +1,7 @@
 package routes
 
 import (
-	h "Vicinia/Handlers"
+	handlers "Vicinia/Handlers"
 	"net/http"
 )
 
@@ -19,30 +19,30 @@ var routes = Routes{
 		"Index",
 		"GET",
 		"/",
-		h.Index,
+		handlers.Index,
 	},
 	Route{
 		"TodoIndex",
 		"GET",
 		"/todos",
-		h.TodoIndex,
+		handlers.TodoIndex,
 	},
 	Route{
 		"TodoShow",
 		"GET",
 		"/todos/{todoId}",
-		h.TodoShow,
+		handlers.TodoShow,
 	},
 	Route{
 		"Welcome",
 		"GET",
 		"/welcome",
-		h.WelcomeHandler,
+		handlers.WelcomeHandler,
 	},
 	Route{
 		"chat",
 		"GET",
 		"/chat",
-		h.ListHandler,
+		handlers.ListHandler,
 	},
 }
