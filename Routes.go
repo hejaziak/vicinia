@@ -36,4 +36,10 @@ var routes = Routes{
         "/welcome",
         WelcomeHandler,
     },
+    Route{
+        "chat",
+        "GET",
+        "/chat",
+        ListHandler,
+    },
 }
