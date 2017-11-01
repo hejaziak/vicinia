@@ -1,0 +1,8 @@
+package: .
+import:
+- package: github.com/gorilla/mux
+- package: github.com/satori/go.uuid
+- package: golang.org/x/net
+  subpackages:
+  - context
+- package: googlemaps.github.io/maps
