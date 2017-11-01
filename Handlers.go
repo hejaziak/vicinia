@@ -5,6 +5,9 @@ import (
     "fmt"
     "net/http"
     "github.com/gorilla/mux"
+
+    "github.com/satori/go.uuid"
+    
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -29,4 +32,18 @@ func TodoShow(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     todoId := vars["todoId"]
     fmt.Fprintln(w, "Todo show:", todoId)
+}
+
+func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
+
+    welcomeMessage := WelcomeStruct{
+        Message:"Welcome ,where do you want to go ?",
+        Uuid: uuid.NewV1(),
+    }
+
+    if err := json.NewEncoder(w).Encode(welcomeMessage); err != nil {
+        panic(err)
+    }
+    
+
 }
