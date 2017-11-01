@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -10,6 +10,8 @@ import (
 	"github.com/satori/go.uuid"
 	"golang.org/x/net/context"
 	"googlemaps.github.io/maps"
+	s "Vicinia/Structures"
+
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -17,9 +19,9 @@ func Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func TodoIndex(w http.ResponseWriter, r *http.Request) {
-	todos := Todos{
-		Todo{Name: "Write presentation"},
-		Todo{Name: "Host meetup"},
+	todos := s.Todos{
+		s.Todo{Name: "Write presentation"},
+		s.Todo{Name: "Host meetup"},
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -38,7 +40,7 @@ func TodoShow(w http.ResponseWriter, r *http.Request) {
 
 func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 
-	welcomeMessage := WelcomeStruct{
+	welcomeMessage := s.WelcomeStruct{
 		Message: "Welcome ,where do you want to go ?",
 		Uuid:    uuid.NewV1(),
 	}
