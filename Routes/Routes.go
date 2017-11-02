@@ -26,5 +26,6 @@ var routes = Routes{
 		"POST",
 		"/chat",
 		handlers.ChatHandler,
+
 	},
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/satori/go.uuid"
 	"golang.org/x/net/context"
 	"googlemaps.github.io/maps"
+	"github.com/kamalpy/apiai-go"
 )
 
 func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -52,10 +53,22 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message string) {
 	c := global.GetMapClient()
 
+	ai := apiaigo.APIAI{
+		AuthToken: "71027bbaf70a4a53847bedce6b83c94f",
+		Language:  "en-US",
+		SessionID: "1234567890",
+	}
+
+	resp, err := ai.SendText(message)
+
+	keyword := resp.Result.Parameters["keyword"]
+	fmt.Println(keyword);
+
+
 	req := &maps.NearbySearchRequest{
 		Location: &maps.LatLng{Lat: 29.985352, Lng: 31.279194},
 		RankBy:   "distance",
-		Keyword:  message,
+		Keyword:  keyword,
 	}
 
 	res, err := c.NearbySearch(context.Background(), req)
