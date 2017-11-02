@@ -11,11 +11,11 @@ import (
 	global "Vicinia/Globals"
 	structures "Vicinia/Structures"
 
+	"github.com/kamalpy/apiai-go"
 	"github.com/kr/pretty"
 	"github.com/satori/go.uuid"
 	"golang.org/x/net/context"
 	"googlemaps.github.io/maps"
-	"github.com/kamalpy/apiai-go"
 )
 
 func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +46,7 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		getList(w, r, uuid, requestBody.Message)
 	} else {
-		getDetails(w, r, uuid, index)
+		getDetails(w, r, uuid, index-1)
 	}
 }
 
@@ -56,14 +56,13 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 	ai := apiaigo.APIAI{
 		AuthToken: "71027bbaf70a4a53847bedce6b83c94f",
 		Language:  "en-US",
-		SessionID: "1234567890",
+		SessionID: uuid.String(),
 	}
 
 	resp, err := ai.SendText(message)
 
 	keyword := resp.Result.Parameters["keyword"]
-	fmt.Println(keyword);
-
+	fmt.Println(keyword)
 
 	req := &maps.NearbySearchRequest{
 		Location: &maps.LatLng{Lat: 29.985352, Lng: 31.279194},
@@ -80,10 +79,10 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 
 	jsonMessage, _ := json.Marshal(output)
 
-	if err := json.NewEncoder(w).Encode(extractMessage(string(jsonMessage))); err != nil {
+	respondMessage := extractMessage(string(jsonMessage), "To get detailed information about a specific place, please type its ID")
+	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
 		panic(err)
 	}
-
 	updateSession(extractUUID(r), res.Results)
 }
 
@@ -128,7 +127,8 @@ func getDetails(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index in
 
 	jsonMessage, _ := json.Marshal(output)
 
-	if err := json.NewEncoder(w).Encode(extractMessage(string(jsonMessage))); err != nil {
+	respondMessage := extractMessage(string(jsonMessage), "")
+	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
 		panic(err)
 	}
 }
@@ -145,6 +145,7 @@ func SimplifyList(input []maps.PlacesSearchResult) []structures.PlaceListEntity 
 			Name:     input[i].Name,
 			Distance: getDistance("29.985352,31.279194", input[i].PlaceID),
 			Rating:   input[i].Rating,
+			ID:       i + 1,
 		}
 	}
 
@@ -181,14 +182,17 @@ func getDistance(cord string, destination string) string {
 	return res.Rows[0].Elements[0].Distance.HumanReadable
 }
 
-func extractMessage(json string) structures.Message {
+func extractMessage(json string, message string) structures.Message {
 	s2 := strings.Replace(json, "{", "", -1)
 	s3 := strings.Replace(s2, "}", "", -1)
 	s4 := strings.Replace(s3, "[", "", -1)
 	s5 := strings.Replace(s4, "]", "", -1)
-	cleanString := strings.Replace(s5, "\"", "", -1)
+	s6 := strings.Replace(s5, "\"", "", -1)
+	cleanString := strings.Replace(s6, ",", " <br/> ", -1)
+	cleanString = cleanString + " <br/> " + message
 
+	pretty.Println(message)
 	return structures.Message{
-		Message: strings.Replace(cleanString, ",", " <br/> ", -1),
+		Message: cleanString,
 	}
 }
