@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/satori/go.uuid"
 	"golang.org/x/net/context"
 	"googlemaps.github.io/maps"
+	"github.com/kamalpy/apiai-go"
 )
 
 func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -31,10 +33,22 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("fatal error: %s", err)
 	}
 
+	ai := apiaigo.APIAI{
+		AuthToken: "71027bbaf70a4a53847bedce6b83c94f",
+		Language:  "en-US",
+		SessionID: "1234567890",
+	}
+
+	resp, err := ai.SendText("I want restraunts")
+
+	keyword := resp.Result.Parameters["keyword"]
+	fmt.Println(keyword);
+
+
 	req := &maps.NearbySearchRequest{
 		Location: &maps.LatLng{Lat: 29.985352, Lng: 31.279194},
 		RankBy:   "distance",
-		Keyword:  "resturants",
+		Keyword:  keyword,
 	}
 
 	res, err := c.NearbySearch(context.Background(), req)
