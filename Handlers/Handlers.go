@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	datastructures "Vicinia/DataStructures"
 	structures "Vicinia/Structures"
@@ -30,12 +31,20 @@ func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ChatHandler(w http.ResponseWriter, r *http.Request) {
-	var message structures.Message
-	if err := json.NewDecoder(r.Body).Decode(&message); err != nil {
+	var requestBody structures.Message
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		panic(err)
 	}
+
+	uuid := extractUUID(r)
+	index, err := strconv.Atoi(requestBody.Message)
+	if err != nil {
+		getList(w, r, uuid, requestBody.Message)
+	}
+	getDetails(w, r, uuid, index)
 }
-func ListHandler(w http.ResponseWriter, r *http.Request) {
+
+func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message string) {
 	c, err := maps.NewClient(maps.WithAPIKey("AIzaSyBZwHSODUVFhzMcAEabT-BOw2_SkOrYEWo"))
 	if err != nil {
 		log.Fatalf("fatal error: %s", err)
@@ -44,7 +53,7 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 	req := &maps.NearbySearchRequest{
 		Location: &maps.LatLng{Lat: 29.985352, Lng: 31.279194},
 		RankBy:   "distance",
-		Keyword:  "resturants",
+		Keyword:  message,
 	}
 
 	res, err := c.NearbySearch(context.Background(), req)
@@ -83,16 +92,16 @@ func updateSession(UUID uuid.UUID, input []maps.PlacesSearchResult) {
 	datastructures.UpdateEntry(UUID, placeIDs)
 }
 
-func DetailsHandler(w http.ResponseWriter, r *http.Request) {
+func getDetails(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index int) {
 	c, err := maps.NewClient(maps.WithAPIKey("AIzaSyBZwHSODUVFhzMcAEabT-BOw2_SkOrYEWo"))
 	if err != nil {
 		log.Fatalf("fatal error: %s", err)
 	}
 
-	placeID := datastructures.GetEntry(extractUUID(r))
+	placeID := datastructures.GetPlace(uuid, index)
 
 	req := &maps.PlaceDetailsRequest{
-		PlaceID: "ChIJZ711I304WBQRZi-S-IYgfTE",
+		PlaceID: placeID,
 	}
 
 	res, err := c.PlaceDetails(context.Background(), req)

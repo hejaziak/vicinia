@@ -23,8 +23,8 @@ var routes = Routes{
 	},
 	Route{
 		"chat",
-		"GET",
+		"POST",
 		"/chat",
-		handlers.ListHandler,
+		handlers.ChatHandler,
 	},
 }

@@ -1,8 +1,7 @@
 package datastructures
 
 import (
-	"fmt"
-
+	"github.com/kr/pretty"
 	"github.com/satori/go.uuid"
 )
 
@@ -23,6 +22,12 @@ func GetEntry(key uuid.UUID) []string {
 	return sessions[key]
 }
 
+//GetPlace : returns a place id from an entry in session's map
+func GetPlace(key uuid.UUID, index int) string {
+	places := GetEntry(key)
+	return places[index]
+}
+
 //UpdateEntry : update a entry in session's map
 func UpdateEntry(key uuid.UUID, placeIDs []string) {
 	sessions[key] = placeIDs
@@ -36,6 +41,6 @@ func DeleteEntry(key uuid.UUID) {
 //PrintMap : displays session's contents
 func PrintMap() {
 	for key, value := range sessions {
-		fmt.Println("Key:", key, "Value:", value)
+		pretty.Println("Key:", key, "Value:", value)
 	}
 }
