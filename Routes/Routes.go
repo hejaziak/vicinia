@@ -25,6 +25,6 @@ var routes = Routes{
 		"chat",
 		"GET",
 		"/chat",
-		handlers.DetailsHandler,
+		handlers.ListHandler,
 	},
 }

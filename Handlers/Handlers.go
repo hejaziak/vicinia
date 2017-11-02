@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
+	datastructures "Vicinia/DataStructures"
 	structures "Vicinia/Structures"
 
 	"github.com/kr/pretty"
@@ -23,8 +25,16 @@ func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(welcomeMessage); err != nil {
 		panic(err)
 	}
+
+	datastructures.CreateEntry(welcomeMessage.UUID)
 }
 
+func ChatHandler(w http.ResponseWriter, r *http.Request) {
+	var message structures.Message
+	if err := json.NewDecoder(r.Body).Decode(&message); err != nil {
+		panic(err)
+	}
+}
 func ListHandler(w http.ResponseWriter, r *http.Request) {
 	c, err := maps.NewClient(maps.WithAPIKey("AIzaSyBZwHSODUVFhzMcAEabT-BOw2_SkOrYEWo"))
 	if err != nil {
@@ -47,6 +57,30 @@ func ListHandler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(output); err != nil {
 		panic(err)
 	}
+
+	updateSession(extractUUID(r), res.Results)
+}
+
+func extractUUID(r *http.Request) uuid.UUID {
+	uuid, err := uuid.FromString(r.Header.Get("Authorization"))
+	if err != nil {
+		fmt.Printf("Something gone wrong: %s", err)
+	}
+
+	return uuid
+}
+
+func updateSession(UUID uuid.UUID, input []maps.PlacesSearchResult) {
+	placeIDs := make([]string, 5)
+
+	for i := 0; i < 5; i++ {
+		if i >= len(input) {
+			break
+		}
+		placeIDs[i] = input[i].PlaceID
+	}
+
+	datastructures.UpdateEntry(UUID, placeIDs)
 }
 
 func DetailsHandler(w http.ResponseWriter, r *http.Request) {
@@ -54,6 +88,8 @@ func DetailsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatalf("fatal error: %s", err)
 	}
+
+	placeID := datastructures.GetEntry(extractUUID(r))
 
 	req := &maps.PlaceDetailsRequest{
 		PlaceID: "ChIJZ711I304WBQRZi-S-IYgfTE",
