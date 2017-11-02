@@ -50,10 +50,7 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message string) {
-	c, err := maps.NewClient(maps.WithAPIKey("AIzaSyBZwHSODUVFhzMcAEabT-BOw2_SkOrYEWo"))
-	if err != nil {
-		log.Fatalf("fatal error: %s", err)
-	}
+	c := global.GetMapClient()
 
 	req := &maps.NearbySearchRequest{
 		Location: &maps.LatLng{Lat: 29.985352, Lng: 31.279194},
@@ -100,10 +97,7 @@ func updateSession(UUID uuid.UUID, input []maps.PlacesSearchResult) {
 }
 
 func getDetails(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index int) {
-	c, err := maps.NewClient(maps.WithAPIKey("AIzaSyBZwHSODUVFhzMcAEabT-BOw2_SkOrYEWo"))
-	if err != nil {
-		log.Fatalf("fatal error: %s", err)
-	}
+	c := global.GetMapClient()
 
 	placeID := global.GetPlace(uuid, index)
 
@@ -158,10 +152,7 @@ func SimplifyDetails(input maps.PlaceDetailsResult) structures.Place {
 }
 
 func getDistance(cord string, destination string) string {
-	c, err := maps.NewClient(maps.WithAPIKey("AIzaSyBZwHSODUVFhzMcAEabT-BOw2_SkOrYEWo"))
-	if err != nil {
-		log.Fatalf("fatal error: %s", err)
-	}
+	c := global.GetMapClient()
 
 	req := &maps.DistanceMatrixRequest{
 		Origins:      []string{cord},

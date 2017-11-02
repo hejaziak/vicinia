@@ -8,8 +8,9 @@ import (
 )
 
 func main() {
-
 	router := routes.NewRouter()
-	global.Init()
+	global.InitSessions()
+	global.InitMapClient("AIzaSyBZwHSODUVFhzMcAEabT-BOw2_SkOrYEWo")
+
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

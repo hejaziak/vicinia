@@ -7,8 +7,8 @@ import (
 
 var sessions map[uuid.UUID][]string
 
-//Init : intializes the session map
-func Init() {
+//InitSessions : intializes the session map
+func InitSessions() {
 	sessions = make(map[uuid.UUID][]string)
 }
 
