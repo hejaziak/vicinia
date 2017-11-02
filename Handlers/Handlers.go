@@ -6,8 +6,9 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
-	datastructures "Vicinia/DataStructures"
+	global "Vicinia/Globals"
 	structures "Vicinia/Structures"
 
 	"github.com/kr/pretty"
@@ -17,6 +18,7 @@ import (
 )
 
 func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
 	welcomeMessage := structures.WelcomeStruct{
 		Message: "Welcome ,where do you want to go ?",
@@ -27,10 +29,12 @@ func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	datastructures.CreateEntry(welcomeMessage.UUID)
+	global.CreateEntry(welcomeMessage.UUID)
 }
 
 func ChatHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	var requestBody structures.Message
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		panic(err)
@@ -40,8 +44,9 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 	index, err := strconv.Atoi(requestBody.Message)
 	if err != nil {
 		getList(w, r, uuid, requestBody.Message)
+	} else {
+		getDetails(w, r, uuid, index)
 	}
-	getDetails(w, r, uuid, index)
 }
 
 func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message string) {
@@ -63,7 +68,9 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 
 	output := SimplifyList(res.Results)
 
-	if err := json.NewEncoder(w).Encode(output); err != nil {
+	jsonMessage, _ := json.Marshal(output)
+
+	if err := json.NewEncoder(w).Encode(extractMessage(string(jsonMessage))); err != nil {
 		panic(err)
 	}
 
@@ -89,7 +96,7 @@ func updateSession(UUID uuid.UUID, input []maps.PlacesSearchResult) {
 		placeIDs[i] = input[i].PlaceID
 	}
 
-	datastructures.UpdateEntry(UUID, placeIDs)
+	global.UpdateEntry(UUID, placeIDs)
 }
 
 func getDetails(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index int) {
@@ -98,7 +105,7 @@ func getDetails(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index in
 		log.Fatalf("fatal error: %s", err)
 	}
 
-	placeID := datastructures.GetPlace(uuid, index)
+	placeID := global.GetPlace(uuid, index)
 
 	req := &maps.PlaceDetailsRequest{
 		PlaceID: placeID,
@@ -112,7 +119,9 @@ func getDetails(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index in
 	output := SimplifyDetails(res)
 	pretty.Println(res)
 
-	if err := json.NewEncoder(w).Encode(output); err != nil {
+	jsonMessage, _ := json.Marshal(output)
+
+	if err := json.NewEncoder(w).Encode(extractMessage(string(jsonMessage))); err != nil {
 		panic(err)
 	}
 }
@@ -166,4 +175,19 @@ func getDistance(cord string, destination string) string {
 	}
 
 	return res.Rows[0].Elements[0].Distance.HumanReadable
+}
+
+func extractMessage(json string) structures.Messages {
+	s1 := strings.Replace(json, "{", "", -1)
+	s2 := strings.Replace(s1, "{", "", -1)
+	s3 := strings.Replace(s2, "}", "", -1)
+	s4 := strings.Replace(s3, "[", "", -1)
+	s5 := strings.Replace(s4, "]", "", -1)
+	s6 := strings.Replace(s5, "\"", "", -1)
+
+	return structures.Messages{
+		Message: strings.SplitAfterN(s6, ",", -1),
+		// Message: strings.Replace(cleanString, ",", "<br/>", -1),
+	}
+
 }

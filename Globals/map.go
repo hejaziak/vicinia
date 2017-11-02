@@ -1,4 +1,4 @@
-package datastructures
+package globals
 
 import (
 	"github.com/kr/pretty"
