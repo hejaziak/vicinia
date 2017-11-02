@@ -12,7 +12,3 @@ type WelcomeStruct struct {
 type Message struct {
 	Message string `json:"message"`
 }
-
-type Messages struct {
-	Message []string `json:"message"`
-}

@@ -177,17 +177,14 @@ func getDistance(cord string, destination string) string {
 	return res.Rows[0].Elements[0].Distance.HumanReadable
 }
 
-func extractMessage(json string) structures.Messages {
-	s1 := strings.Replace(json, "{", "", -1)
-	s2 := strings.Replace(s1, "{", "", -1)
+func extractMessage(json string) structures.Message {
+	s2 := strings.Replace(json, "{", "", -1)
 	s3 := strings.Replace(s2, "}", "", -1)
 	s4 := strings.Replace(s3, "[", "", -1)
 	s5 := strings.Replace(s4, "]", "", -1)
-	s6 := strings.Replace(s5, "\"", "", -1)
+	cleanString := strings.Replace(s5, "\"", "", -1)
 
-	return structures.Messages{
-		Message: strings.SplitAfterN(s6, ",", -1),
-		// Message: strings.Replace(cleanString, ",", "<br/>", -1),
+	return structures.Message{
+		Message: strings.Replace(cleanString, ",", " <br/> ", -1),
 	}
-
 }
