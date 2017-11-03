@@ -2,6 +2,7 @@ package globals
 
 import (
 	"errors"
+	"time"
 
 	"github.com/kr/pretty"
 	"github.com/satori/go.uuid"
@@ -20,10 +21,17 @@ func CreateEntry(key uuid.UUID) error {
 
 	if len(test) > 0 {
 		return errors.New("UUID already exists")
-
 	}
 
 	sessions[key] = make([]string, 0, 5)
+
+	time.AfterFunc(time.Duration(24*time.Hour), func() {
+		if err := DeleteEntry(key); err != nil {
+			return
+		}
+	})
+
+	PrintMap()
 	return nil
 }
 

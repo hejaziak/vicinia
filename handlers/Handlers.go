@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	globals "vicinia/globals"
 	structures "vicinia/structures"
 
 	"github.com/satori/go.uuid"
@@ -18,6 +19,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 		"  GET  /welcome - handleWelcome" +
 		"  POST /chat    - handleChat" +
 		"  GET  /        - handle        (current)" + " || " + " We are happy to serve you !!"
+
 	if err := json.NewEncoder(w).Encode(body); err != nil {
 		log.Fatalf("fatal error: %s", err)
 		returnError(w, "")
@@ -27,14 +29,19 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	newUUID := uuid.NewV1()
 	welcomeMessage := structures.WelcomeStruct{
 		Message: "Welcome ,where do you want to go ?",
-		UUID:    uuid.NewV1(),
+		UUID:    newUUID,
 	}
 
 	if err := json.NewEncoder(w).Encode(welcomeMessage); err != nil {
 		log.Fatalf("fatal error: %s", err)
 		returnError(w, "")
+	}
+
+	if err := globals.CreateEntry(newUUID); err != nil {
+		log.Fatalf("fatal error: %s", err)
 	}
 }
 
