@@ -1,1 +1,1 @@
-web: Vicinia
+web: vicinia

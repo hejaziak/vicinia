@@ -6,6 +6,8 @@ import (
 	"os"
 	global "vicinia/globals"
 	routes "vicinia/routes"
+
+	cors "github.com/heppu/simple-cors"
 )
 
 func main() {
@@ -19,5 +21,5 @@ func main() {
 	global.InitSessions()
 	global.InitMapClient("AIzaSyBZwHSODUVFhzMcAEabT-BOw2_SkOrYEWo")
 
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	log.Fatal(http.ListenAndServe(":"+port, cors.CORS(router)))
 }

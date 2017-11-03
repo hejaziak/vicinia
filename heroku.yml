@@ -3,4 +3,4 @@ build:
     - heroku/go
 
 run:
-  web: Vicinia
+  web: vicinia
