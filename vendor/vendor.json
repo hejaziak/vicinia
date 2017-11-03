@@ -39,6 +39,12 @@
 			"revisionTime": "2016-05-04T02:26:26Z"
 		},
 		{
+			"checksumSHA1": "7XkF6I2+rWrSrmZ1PwOCG+wRirA=",
+			"path": "github.com/marcossegovia/apiai-go",
+			"revision": "ff0b3570a69a266426e561f76ae6af57971cff4e",
+			"revisionTime": "2017-09-02T20:41:03Z"
+		},
+		{
 			"checksumSHA1": "I778b2sbNN/yjwKSdb3y7hz2yUQ=",
 			"path": "github.com/rs/cors",
 			"revision": "eabcc6af4bbe5ad3a949d36450326a2b0b9894b8",

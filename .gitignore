@@ -26,6 +26,8 @@
 .history
 
 # End of https://www.gitignore.io/api/go,visualstudiocode
+.DS_Store
 
 vicinia
 vendor/*/
+.DS_Store
