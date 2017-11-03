@@ -1,0 +1,61 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "06I0wBTXKCu2Br46zNqsv+LXRgY=",
+			"path": "github.com/gorilla/mux",
+			"revision": "7625a85c14e615274a4ee4bc8654f72310a563e4",
+			"revisionTime": "2017-10-20T03:47:00Z"
+		},
+		{
+			"checksumSHA1": "ULDAiJ3SEznOF17Rc70bkiSuefs=",
+			"path": "github.com/kamalpy/apiai-go",
+			"revision": "3c3cd6b66ecfc301943cca0263e0ccf358b07875",
+			"revisionTime": "2017-06-17T09:38:10Z"
+		},
+		{
+			"checksumSHA1": "eOXF2PEvYLMeD8DSzLZJWbjYzco=",
+			"path": "github.com/kr/pretty",
+			"revision": "cfb55aafdaf3ec08f0db22699ab822c50091b1c4",
+			"revisionTime": "2016-08-23T17:07:15Z"
+		},
+		{
+			"checksumSHA1": "uulQHQ7IsRKqDudBC8Go9J0gtAc=",
+			"path": "github.com/kr/text",
+			"revision": "7cafcd837844e784b526369c9bce262804aebc60",
+			"revisionTime": "2016-05-04T02:26:26Z"
+		},
+		{
+			"checksumSHA1": "zmC8/3V4ls53DJlNTKDZwPSC/dA=",
+			"path": "github.com/satori/go.uuid",
+			"revision": "5bf94b69c6b68ee1b541973bb8e1144db23a194b",
+			"revisionTime": "2017-03-21T23:07:31Z"
+		},
+		{
+			"checksumSHA1": "GtamqiJoL7PGHsN454AoffBFMa8=",
+			"path": "golang.org/x/net/context",
+			"revision": "c73622c77280266305273cb545f54516ced95b93",
+			"revisionTime": "2017-06-11T01:16:46Z"
+		},
+		{
+			"checksumSHA1": "WHc3uByvGaMcnSoI21fhzYgbOgg=",
+			"path": "golang.org/x/net/context/ctxhttp",
+			"revision": "c73622c77280266305273cb545f54516ced95b93",
+			"revisionTime": "2017-06-11T01:16:46Z"
+		},
+		{
+			"checksumSHA1": "SncamQrdIYiIzBZ3KzZIA/fbOoY=",
+			"path": "googlemaps.github.io/maps",
+			"revision": "da8b5a37599fe526eb41b84489aa6c188c5c03dc",
+			"revisionTime": "2017-10-20T01:06:42Z"
+		},
+		{
+			"checksumSHA1": "T47E4DD/+UCGq0rAc70yGCEWJ0w=",
+			"path": "googlemaps.github.io/maps/internal",
+			"revision": "da8b5a37599fe526eb41b84489aa6c188c5c03dc",
+			"revisionTime": "2017-10-20T01:06:42Z"
+		}
+	],
+	"rootPath": "vicinia"
+}
