@@ -23,7 +23,7 @@ func CreateEntry(key uuid.UUID) error {
 		return errors.New("UUID already exists")
 	}
 
-	sessions[key] = make([]string, 0, 5)
+	sessions[key] = make([]string, 1, 5)
 
 	time.AfterFunc(time.Duration(24*time.Hour), func() {
 		if err := DeleteEntry(key); err != nil {
@@ -31,7 +31,6 @@ func CreateEntry(key uuid.UUID) error {
 		}
 	})
 
-	PrintMap()
 	return nil
 }
 
@@ -69,9 +68,7 @@ func GetPlace(key uuid.UUID, index int) (string, error) {
 
 //UpdateEntry : update a entry in session's map
 func UpdateEntry(key uuid.UUID, placeIDs []string) error {
-	_, err := GetEntry(key)
-
-	if err != nil {
+	if _, err := GetEntry(key); err != nil {
 		return err
 	}
 
@@ -81,9 +78,7 @@ func UpdateEntry(key uuid.UUID, placeIDs []string) error {
 
 //DeleteEntry : deletes a entry in session's map
 func DeleteEntry(key uuid.UUID) error {
-	_, err := GetEntry(key)
-
-	if err != nil {
+	if _, err := GetEntry(key); err != nil {
 		return err
 	}
 
@@ -93,7 +88,9 @@ func DeleteEntry(key uuid.UUID) error {
 
 //PrintMap : displays session's contents
 func PrintMap() {
+	pretty.Println("Map ======================:")
 	for key, value := range sessions {
 		pretty.Println("Key:", key, "Value:", value)
 	}
+	pretty.Println("====================================")
 }
