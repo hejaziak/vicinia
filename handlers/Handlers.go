@@ -27,7 +27,7 @@ func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewEncoder(w).Encode(welcomeMessage); err != nil {
-		panic(err)
+		log.Fatalf("fatal error: %s", err)
 	}
 
 	global.CreateEntry(welcomeMessage.UUID)
@@ -38,7 +38,7 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 
 	var requestBody structures.Message
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-		panic(err)
+		log.Fatalf("fatal error: %s", err)
 	}
 
 	uuid := extractUUID(r)
@@ -51,7 +51,11 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message string) {
-	c := global.GetMapClient()
+	c, err := global.GetMapClient()
+	if err != nil {
+		returnError(w, "")
+		return
+	}
 
 	ai := apiaigo.APIAI{
 		AuthToken: "71027bbaf70a4a53847bedce6b83c94f",
@@ -75,27 +79,39 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 		log.Fatalf("fatal error: %s", err)
 	}
 
-	output := SimplifyList(res.Results)
+	if len(res.Results) <= 0 {
+		returnError(w, "sorry I couldn't find any results matching the keyword: "+keyword)
+		return
+	}
+
+	output, err := SimplifyList(res.Results)
 
 	jsonMessage, _ := json.Marshal(output)
-
 	respondMessage := extractMessage(string(jsonMessage), "To get detailed information about a specific place, please type its ID")
 	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
-		panic(err)
+		log.Fatalf("fatal error: %s", err)
 	}
-	updateSession(extractUUID(r), res.Results)
-}
 
-func extractUUID(r *http.Request) uuid.UUID {
-	uuid, err := uuid.FromString(r.Header.Get("Authorization"))
+	inUUID, err := extractUUID(r)
 	if err != nil {
-		fmt.Printf("Something gone wrong: %s", err)
+		returnError(w)
+		return
 	}
 
-	return uuid
+	updateSession(inUUID, res.Results)
 }
 
-func updateSession(UUID uuid.UUID, input []maps.PlacesSearchResult) {
+func extractUUID(r *http.Request) (uuid.UUID, error) {
+	uuidNew, err := uuid.FromString(r.Header.Get("Authorization"))
+	if err != nil {
+		log.Fatalf("fatal error: %s", err)
+		return uuid.Nil, err
+	}
+
+	return uuidNew, nil
+}
+
+func updateSession(UUID uuid.UUID, input []maps.PlacesSearchResult) error {
 	placeIDs := make([]string, 5)
 
 	for i := 0; i < 5; i++ {
@@ -105,13 +121,40 @@ func updateSession(UUID uuid.UUID, input []maps.PlacesSearchResult) {
 		placeIDs[i] = input[i].PlaceID
 	}
 
-	global.UpdateEntry(UUID, placeIDs)
+	err := global.UpdateEntry(UUID, placeIDs)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func returnError(w http.ResponseWriter, message string) {
+	if message == "" {
+		message = "Oops! something went wrong"
+	}
+
+	respondMessage := structures.Message{
+		Message: message,
+	}
+
+	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
+		log.Fatalf("fatal error: %s", err)
+	}
 }
 
 func getDetails(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index int) {
-	c := global.GetMapClient()
+	c, err := global.GetMapClient()
+	if err != nil {
+		returnError(w, "")
+		return
+	}
 
-	placeID := global.GetPlace(uuid, index)
+	placeID, err := global.GetPlace(uuid, index)
+	if err != nil {
+		returnError(w, "")
+		return
+	}
 
 	req := &maps.PlaceDetailsRequest{
 		PlaceID: placeID,
@@ -122,51 +165,97 @@ func getDetails(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index in
 		log.Fatalf("fatal error: %s", err)
 	}
 
-	output := SimplifyDetails(res)
+	output, err := SimplifyDetails(res)
+	if err != nil {
+		returnError(w, "")
+		return
+	}
 	pretty.Println(res)
 
 	jsonMessage, _ := json.Marshal(output)
-
 	respondMessage := extractMessage(string(jsonMessage), "")
 	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
-		panic(err)
+		log.Fatalf("fatal error: %s", err)
 	}
 }
 
-func SimplifyList(input []maps.PlacesSearchResult) []structures.PlaceListEntity {
-	output := make([]structures.PlaceListEntity, 5)
+func SimplifyList(input []maps.PlacesSearchResult) ([]structures.PlaceListEntity, error) {
+	output := make([]structures.PlaceListEntity, 0, 5)
 
 	for i := 0; i < 5; i++ {
 		if i >= len(input) {
 			break
 		}
 
+		name := input[i].Name
+		if name == "" {
+			name = "not specified"
+		}
+
+		distance, err := getDistance("29.985352,31.279194", input[i].PlaceID)
+		if err != nil {
+			return nil, err
+		}
+
 		output[i] = structures.PlaceListEntity{
-			Name:     input[i].Name,
-			Distance: getDistance("29.985352,31.279194", input[i].PlaceID),
+			Name:     name,
+			Distance: distance,
 			Rating:   input[i].Rating,
 			ID:       i + 1,
 		}
 	}
 
-	return output
+	return output, nil
 }
 
-func SimplifyDetails(input maps.PlaceDetailsResult) structures.Place {
-	output := structures.Place{
-		Name:         input.Name,
-		Distance:     getDistance("29.985352,31.279194", input.PlaceID),
-		Rating:       input.Rating,
-		Type:         input.Types[0],
-		Address:      input.FormattedAddress,
-		MobileNumber: input.FormattedPhoneNumber,
-		Link:         input.URL,
+func SimplifyDetails(input maps.PlaceDetailsResult) (structures.Place, error) {
+	name := input.Name
+	if name == "" {
+		name = "not specified"
 	}
-	return output
+
+	distance, err := getDistance("29.985352,31.279194", input.PlaceID)
+	if err != nil {
+		return structures.Place{}, err
+	}
+
+	types := input.Types[0]
+	if types == "" {
+		types = "not specified"
+	}
+
+	address := input.FormattedAddress
+	if address == "" {
+		address = "not specified"
+	}
+
+	phone := input.FormattedPhoneNumber
+	if phone == "" {
+		phone = "not specified"
+	}
+
+	url := input.URL
+	if url == "" {
+		url = "not specified"
+	}
+
+	output := structures.Place{
+		Name:         name,
+		Distance:     distance,
+		Rating:       input.Rating,
+		Type:         types,
+		Address:      address,
+		MobileNumber: phone,
+		Link:         url,
+	}
+	return output, nil
 }
 
-func getDistance(cord string, destination string) string {
-	c := global.GetMapClient()
+func getDistance(cord string, destination string) (string, error) {
+	c, err := global.GetMapClient()
+	if err != nil {
+		return "", err
+	}
 
 	req := &maps.DistanceMatrixRequest{
 		Origins:      []string{cord},
@@ -176,10 +265,10 @@ func getDistance(cord string, destination string) string {
 
 	res, err := c.DistanceMatrix(context.Background(), req)
 	if err != nil {
-		log.Fatalf("fatal error: %s", err)
+		return "", err
 	}
 
-	return res.Rows[0].Elements[0].Distance.HumanReadable
+	return res.Rows[0].Elements[0].Distance.HumanReadable, nil
 }
 
 func extractMessage(json string, message string) structures.Message {

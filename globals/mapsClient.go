@@ -1,6 +1,7 @@
 package globals
 
 import (
+	"errors"
 	"log"
 
 	"googlemaps.github.io/maps"
@@ -18,6 +19,10 @@ func InitMapClient(apiKey string) {
 }
 
 //GetMapClient : returns the MapsClient
-func GetMapClient() *maps.Client {
-	return mapsClient
+func GetMapClient() (*maps.Client, error) {
+	if mapsClient == nil {
+		return nil, errors.New("client not initialized")
+	}
+
+	return mapsClient, nil
 }
