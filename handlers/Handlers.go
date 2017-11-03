@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	global "Vicinia/Globals"
-	structures "Vicinia/Structures"
+	global "vicinia/globals"
+	structures "vicinia/structures"
 
 	"github.com/kamalpy/apiai-go"
 	"github.com/kr/pretty"

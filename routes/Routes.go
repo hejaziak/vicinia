@@ -1,8 +1,8 @@
 package routes
 
 import (
-	handlers "Vicinia/Handlers"
 	"net/http"
+	handlers "vicinia/handlers"
 )
 
 type Route struct {
