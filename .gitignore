@@ -29,3 +29,4 @@
 
 vicinia
 vendor/*/
+.DS_Store
