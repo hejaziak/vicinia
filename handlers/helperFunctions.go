@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -33,7 +32,6 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 	resp, err := ai.SendText(message)
 
 	keyword := resp.Result.Parameters["keyword"]
-	fmt.Println(keyword)
 
 	req := &maps.NearbySearchRequest{
 		Location: &maps.LatLng{Lat: 29.985352, Lng: 31.279194},
@@ -248,7 +246,6 @@ func extractMessage(json string, message string) structures.Message {
 	cleanString := strings.Replace(s6, ",", " <br/> ", -1)
 	cleanString = cleanString + " <br/> " + message
 
-	pretty.Println(message)
 	return structures.Message{
 		Message: cleanString,
 	}
