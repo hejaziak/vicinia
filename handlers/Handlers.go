@@ -196,3 +196,16 @@ func extractMessage(json string, message string) structures.Message {
 		Message: cleanString,
 	}
 }
+
+func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+		body :=	"Available Routes:" +
+			"  GET  /welcome - handleWelcome" +
+			"  POST /chat    - handleChat" +
+			"  GET  /        - handle        (current)" +" || "+ " We are happy to serve you !!"
+	if err := json.NewEncoder(w).Encode(body); err != nil {
+		panic(err)
+	}
+
+}
