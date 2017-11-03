@@ -16,6 +16,12 @@ type Routes []Route
 
 var routes = Routes{
 	Route{
+		"Index",
+		"GET",
+		"/",
+		handlers.IndexHandler,
+	},
+	Route{
 		"Welcome",
 		"GET",
 		"/welcome",
