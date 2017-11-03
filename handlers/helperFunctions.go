@@ -146,10 +146,11 @@ func returnError(w http.ResponseWriter, message string) {
 }
 
 func SimplifyList(input []maps.PlacesSearchResult) ([]structures.PlaceListEntity, error) {
-	output := make([]structures.PlaceListEntity, 0, 5)
+	output := make([]structures.PlaceListEntity, 5)
 
 	for i := 0; i < 5; i++ {
 		if i >= len(input) {
+			output = output[:i]
 			break
 		}
 
