@@ -59,31 +59,44 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 		SessionID: uuid.String(),
 	}
 
-	resp, err := ai.SendText(message)
+	//handle error
+	resp, _ := ai.SendText(message)
 
-	keyword := resp.Result.Parameters["keyword"]
-	fmt.Println(keyword)
+	if(strings.Compare(resp.Result.Action,"search") != 0){
+		fmt.Println(resp)
 
-	req := &maps.NearbySearchRequest{
-		Location: &maps.LatLng{Lat: 29.985352, Lng: 31.279194},
-		RankBy:   "distance",
-		Keyword:  keyword,
+		jsonMessage, _ := json.Marshal(resp.Result.Fulfillment.Messages[0].Speech)
+
+		if err := json.NewEncoder(w).Encode(jsonMessage); err != nil {
+			panic(err)
+		}
+	} else {
+
+		keyword := resp.Result.Parameters["keyword"]
+		fmt.Println(keyword)
+
+		req := &maps.NearbySearchRequest{
+			Location: &maps.LatLng{Lat: 29.985352, Lng: 31.279194},
+			RankBy:   "distance",
+			Keyword:  keyword,
+		}
+
+		res, err := c.NearbySearch(context.Background(), req)
+		if err != nil {
+			log.Fatalf("fatal error: %s", err)
+		}
+
+		output := SimplifyList(res.Results)
+
+		jsonMessage, _ := json.Marshal(output)
+
+		respondMessage := extractMessage(string(jsonMessage), "To get detailed information about a specific place, please type its ID")
+		if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
+			panic(err)
+		}
+		updateSession(extractUUID(r), res.Results)
 	}
-
-	res, err := c.NearbySearch(context.Background(), req)
-	if err != nil {
-		log.Fatalf("fatal error: %s", err)
-	}
-
-	output := SimplifyList(res.Results)
-
-	jsonMessage, _ := json.Marshal(output)
-
-	respondMessage := extractMessage(string(jsonMessage), "To get detailed information about a specific place, please type its ID")
-	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
-		panic(err)
-	}
-	updateSession(extractUUID(r), res.Results)
+	
 }
 
 func extractUUID(r *http.Request) uuid.UUID {
