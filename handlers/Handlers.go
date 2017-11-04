@@ -12,6 +12,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+//IndexHandler: returns to the client the available routes
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -26,6 +27,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//WelcomeHandler: creates a new uuid and returns a welcome message
 func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -45,6 +47,7 @@ func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//ChatHandler: returns the required chat message
 func ChatHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
