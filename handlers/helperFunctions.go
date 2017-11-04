@@ -9,11 +9,11 @@ import (
 	global "vicinia/globals"
 	structures "vicinia/structures"
 
-	"github.com/kamalpy/apiai-go"
 	"github.com/kr/pretty"
 	"github.com/satori/go.uuid"
 	"golang.org/x/net/context"
 	"googlemaps.github.io/maps"
+	"github.com/marcossegovia/apiai-go"
 )
 
 func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message string) {
@@ -23,48 +23,68 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 		return
 	}
 
-	ai := apiaigo.APIAI{
-		AuthToken: "71027bbaf70a4a53847bedce6b83c94f",
-		Language:  "en-US",
-		SessionID: uuid.String(),
-	}
 
-	resp, err := ai.SendText(message)
+	client, err := apiai.NewClient(
+        &apiai.ClientConfig{
+            Token:      "71027bbaf70a4a53847bedce6b83c94f",
+            QueryLang:  "en",    //Default en
+            SpeechLang: "en-US", //Default en-US
+        },
+    )
 
-	keyword := resp.Result.Parameters["keyword"]
+    if err != nil {
+        returnError(w, "")
+    }
 
-	req := &maps.NearbySearchRequest{
-		Location: &maps.LatLng{Lat: 29.985352, Lng: 31.279194},
-		RankBy:   "distance",
-		Keyword:  keyword,
-	}
+        //Set the query string and your current user identifier.
+    qr, err := client.Query(apiai.Query{Query: []string{message}, SessionId: uuid.String()})
+    if err != nil {
+        pretty.Printf("%v", err)
+    }
 
-	res, err := c.NearbySearch(context.Background(), req)
-	if err != nil {
-		log.Fatalf("fatal error: %s", err)
-		returnError(w, "")
-	}
+    action := qr.Result.Action
 
-	if len(res.Results) <= 0 {
-		returnError(w, "sorry I couldn't find any results matching the keyword: "+keyword)
-		return
-	}
+	if(strings.Compare(action,"search") != 0 ){
+		if err := json.NewEncoder(w).Encode(qr.Result.Fulfillment.Speech); err != nil {
+			panic(err)
+		}  	
 
-	output, err := SimplifyList(res.Results)
+    } else {
+    	
+	    keyword := qr.Result.Params["keyword"]
 
-	jsonMessage, _ := json.Marshal(output)
-	respondMessage := extractMessage(string(jsonMessage), "To get detailed information about a specific place, please type its ID")
-	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
-		log.Fatalf("fatal error: %s", err)
-	}
+		req := &maps.NearbySearchRequest{
+			Location: &maps.LatLng{Lat: 29.985352, Lng: 31.279194},
+			RankBy:   "distance",
+			Keyword:  string(keyword.(string)),
+		}
 
-	inUUID, err := extractUUID(r)
-	if err != nil {
-		returnError(w, "")
-		return
-	}
+		res, err := c.NearbySearch(context.Background(), req)
+		if err != nil {
+			log.Fatalf("fatal error: %s", err)
+			returnError(w, "")
+		}
 
-	updateSession(inUUID, res.Results)
+		if len(res.Results) <= 0 {
+			returnError(w, "sorry I couldn't find any results matching the keyword: "+string(keyword.(string)))
+			return
+		}
+		output , err:= SimplifyList(res.Results)
+
+		jsonMessage, _ := json.Marshal(output)
+
+		respondMessage := extractMessage(string(jsonMessage), "To get detailed information about a specific place, please type its ID")
+		if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
+			log.Fatalf("fatal error: %s", err)
+		}
+
+		inUUID, err := extractUUID(r)
+		if err != nil {
+			returnError(w, "")
+			return
+		}
+		updateSession(inUUID, res.Results)
+    }
 }
 
 func getDetails(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index int) {
