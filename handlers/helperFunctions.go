@@ -45,7 +45,11 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
     action := qr.Result.Action
 
 	if(strings.Compare(action,"search") != 0 ){
-		if err := json.NewEncoder(w).Encode(qr.Result.Fulfillment.Speech); err != nil {
+
+		res := structures.Message{
+			Message: qr.Result.Fulfillment.Speech,
+		} 
+		if err := json.NewEncoder(w).Encode(res); err != nil {
 			panic(err)
 		}  	
 
