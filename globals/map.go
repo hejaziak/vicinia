@@ -59,7 +59,7 @@ func GetPlace(key uuid.UUID, index int) (string, error) {
 
 	test := places[index]
 
-	if test != "" {
+	if test == "" {
 		return "", errors.New("record not initialized")
 	}
 
