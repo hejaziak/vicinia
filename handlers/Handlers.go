@@ -67,3 +67,10 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 		getDetails(w, r, inUUID, index-1)
 	}
 }
+
+func MiscHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNotFound)
+
+	returnError(w, "please perform a GET on access /welcome to get a new UUID or a POST on /chat to converse with the chatbot")
+}
