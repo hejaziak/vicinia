@@ -121,7 +121,7 @@ func getDetails(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index in
 	pretty.Println(res)
 
 	jsonMessage, _ := json.Marshal(output)
-	respondMessage := extractMessage(string(jsonMessage), "")
+	respondMessage := extractMessage(string(jsonMessage), "Any other place you want to search for ?")
 	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
 		log.Fatalf("fatal error: %s", err)
 	}
@@ -268,8 +268,9 @@ func extractMessage(json string, message string) structures.Message {
 	s4 := strings.Replace(s3, "[", "", -1)
 	s5 := strings.Replace(s4, "]", "", -1)
 	s6 := strings.Replace(s5, "\"", "", -1)
-	cleanString := strings.Replace(s6, ",", " <br/> ", -1)
-	cleanString = cleanString + " <br/> " + message
+	s7 := strings.Replace(s6, ",", " <br/> ", -1)
+	cleanString := strings.Replace(s7, "<br/> name:", "<br/> <br/> name:", -1)
+	cleanString = cleanString + " <br/> <br/> " + message
 
 	return structures.Message{
 		Message: cleanString,
