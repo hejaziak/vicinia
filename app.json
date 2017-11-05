@@ -1,12 +1,11 @@
 {
-  "name": "Start on Heroku: Go",
-  "description": "Go Getting Started Example App",
+  "name": "Vicinia",
+  "description": "A chat bot that helps you find nearby places",
   "keywords": [
-    "getting-started",
     "go",
-    "sample",
-    "example"
+    "chatbot",
+    "google maps"
   ],
-  "website": "http://github.com/heroku/go-getting-started",
-  "repository": "http://github.com/heroku/go-getting-started"
+  "website": "https://vicinia.herokuapp.com",
+  "repository": "https://github.com/hejaziak/vicinia"
 }
