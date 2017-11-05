@@ -8,6 +8,7 @@ import (
 	routes "vicinia/routes"
 
 	cors "github.com/heppu/simple-cors"
+	"github.com/kr/pretty"
 )
 
 func main() {
@@ -19,8 +20,8 @@ func main() {
 
 	router := routes.NewRouter()
 	global.InitSessions()
-	if err:= global.InitMapClient("AIzaSyBZwHSODUVFhzMcAEabT-BOw2_SkOrYEWo"; err != nil{
-		pretty.Printf("fatal error: %s \n", err)		
+	if err := global.InitMapClient("AIzaSyBZwHSODUVFhzMcAEabT-BOw2_SkOrYEWo"); err != nil {
+		pretty.Printf("fatal error: %s \n", err)
 	}
 
 	log.Fatal(http.ListenAndServe(":"+port, cors.CORS(router)))
