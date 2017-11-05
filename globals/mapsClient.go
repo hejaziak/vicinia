@@ -2,20 +2,23 @@ package globals
 
 import (
 	"errors"
-	"log"
 
+	"github.com/kr/pretty"
 	"googlemaps.github.io/maps"
 )
 
 var mapsClient *maps.Client
 
 //InitMapClient : intializes the MapsClient
-func InitMapClient(apiKey string) {
+func InitMapClient(apiKey string) error {
 	var err error
 	mapsClient, err = maps.NewClient(maps.WithAPIKey(apiKey))
 	if err != nil {
-		log.Fatalf("fatal error: %s", err)
+		pretty.Printf("fatal error: %s \n", err)
+		return err
 	}
+
+	return nil
 }
 
 //GetMapClient : returns the MapsClient

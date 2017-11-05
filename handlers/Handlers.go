@@ -2,13 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 
 	globals "vicinia/globals"
 	structures "vicinia/structures"
 
+	"github.com/kr/pretty"
 	"github.com/satori/go.uuid"
 )
 
@@ -22,8 +22,9 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 		"  GET  /        - handle        (current)" + " || " + " We are happy to serve you !!"
 
 	if err := json.NewEncoder(w).Encode(body); err != nil {
-		log.Fatalf("fatal error: %s", err)
+		pretty.Printf("fatal error: %s \n", err)
 		returnError(w, "")
+		return
 	}
 }
 
@@ -32,18 +33,19 @@ func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	newUUID := uuid.NewV1()
-	welcomeMessage := structures.WelcomeStruct{
+	response := structures.WelcomeStruct{
 		Message: "Welcome ,where do you want to go ?",
 		UUID:    newUUID,
 	}
 
-	if err := json.NewEncoder(w).Encode(welcomeMessage); err != nil {
-		log.Fatalf("fatal error: %s", err)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		pretty.Printf("fatal error: %s \n", err)
 		returnError(w, "")
+		return
 	}
 
 	if err := globals.CreateEntry(newUUID); err != nil {
-		log.Fatalf("fatal error: %s", err)
+		pretty.Printf("fatal error: %s \n", err)
 	}
 }
 
@@ -56,6 +58,7 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 		returnUnauthorized(w, "sorry, UUID not set, please access /welcome to receive an UUID")
 		return
 	}
+
 	if _, err := globals.GetEntry(inUUID); err != nil {
 		returnUnauthorized(w, "sorry, UUID is not correct, please access /welcome to receive an UUID")
 		return
@@ -63,8 +66,9 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 
 	var requestBody structures.Message
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-		log.Fatalf("fatal error: %s", err)
+		pretty.Printf("fatal error: %s \n", err)
 		returnError(w, "")
+		return
 	}
 
 	index, err := strconv.Atoi(requestBody.Message)

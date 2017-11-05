@@ -19,7 +19,9 @@ func main() {
 
 	router := routes.NewRouter()
 	global.InitSessions()
-	global.InitMapClient("AIzaSyBZwHSODUVFhzMcAEabT-BOw2_SkOrYEWo")
+	if err:= global.InitMapClient("AIzaSyBZwHSODUVFhzMcAEabT-BOw2_SkOrYEWo"; err != nil{
+		pretty.Printf("fatal error: %s \n", err)		
+	}
 
 	log.Fatal(http.ListenAndServe(":"+port, cors.CORS(router)))
 }
