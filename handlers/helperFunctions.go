@@ -25,7 +25,6 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 		return
 	}
 
-
 	client, err := apiai.NewClient(
         &apiai.ClientConfig{
             Token:      "71027bbaf70a4a53847bedce6b83c94f",
@@ -67,14 +66,10 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 
 		res, err := c.NearbySearch(context.Background(), req)
 		if err != nil {
-			log.Fatalf("fatal error: %s", err)
-			returnError(w, "")
-		}
-
-		if len(res.Results) <= 0 {
-			returnError(w, "sorry I couldn't find any results matching the keyword: "+string(keyword.(string)))
+			returnError(w, "sorry, I couldn't find any relevant places")
 			return
 		}
+
 		output , err:= SimplifyList(res.Results)
 
 		jsonMessage, _ := json.Marshal(output)
