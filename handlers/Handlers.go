@@ -50,7 +50,11 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 
 	inUUID, err := extractUUID(r)
 	if err != nil {
-		returnError(w, "sorry, UUID not set, please access \"/welcome\" to receive an UUID")
+		returnUnauthorized(w, "sorry, UUID not set, please access /welcome to receive an UUID")
+		return
+	}
+	if _, err := globals.GetEntry(inUUID); err != nil {
+		returnUnauthorized(w, "sorry, UUID is not correct, please access /welcome to receive an UUID")
 		return
 	}
 
