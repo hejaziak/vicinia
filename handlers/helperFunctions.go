@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"strconv"
 
 	globals "vicinia/globals"
 	structures "vicinia/structures"
@@ -75,11 +76,15 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 			returnError(w, "sorry, I couldn't find any relevant places")
 			return
 		}
+		
 		output, err := SimplifyList(res.Results)
-
-		jsonMessage, _ := json.Marshal(output)
-
-		respondMessage := extractMessage(string(jsonMessage), "To get detailed information about a specific place, please type its ID")
+		if err != nil {
+			pretty.Printf("fatal error: %s \n", err)
+			returnError(w, "")
+			return
+		}
+		
+		respondMessage := formatList(output, "To get detailed information about a specific place, please type its ID")
 		if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
 			pretty.Printf("fatal error: %s \n", err)
 			returnError(w, "")
@@ -129,10 +134,8 @@ func getDetails(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index in
 		returnError(w, "")
 		return
 	}
-	pretty.Println(res)
 
-	jsonMessage, _ := json.Marshal(output)
-	respondMessage := extractMessage(string(jsonMessage), "Any other place you want to search for ?")
+	respondMessage := formatDetails(output, "Any other place you want to search for ?")
 
 	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
 		pretty.Printf("fatal error: %s \n", err)
@@ -313,18 +316,38 @@ func getDistance(cord string, destination string) (string, error) {
 	return res.Rows[0].Elements[0].Distance.HumanReadable, nil
 }
 
-//extractMessage: returns a formatted response message to be readable by the client
-func extractMessage(json string, message string) structures.Message {
-	s2 := strings.Replace(json, "{", "", -1)
-	s3 := strings.Replace(s2, "}", "", -1)
-	s4 := strings.Replace(s3, "[", "", -1)
-	s5 := strings.Replace(s4, "]", "", -1)
-	s6 := strings.Replace(s5, "\"", "", -1)
-	s7 := strings.Replace(s6, ",", " <br/> ", -1)
-	cleanString := strings.Replace(s7, "<br/> name:", "<br/> <br/> name:", -1)
-	cleanString = cleanString + " <br/> <br/> " + message
+//formatList: returns a formatted message containing list of places
+func formatList(placesList []structures.PlaceListEntity, message string) structures.Message{
+	formattedMessage := ""
+	for _, place := range placesList{
+		formattedMessage+=
+		"Name: " + place.Name + " <br/> " +
+		"Distance: " + place.Distance + " <br/> " +
+		"Rating: " + strconv.FormatFloat(float64(place.Rating), 'f', -1, 32) + " <br/> " +
+		"ID: " + strconv.Itoa(place.ID) + " <br/> <br/> "
+	}
+
+	formattedMessage+=message
 
 	return structures.Message{
-		Message: cleanString,
+		Message: formattedMessage,
 	}
+}
+
+//formatDetails: returns a formatted message containing details of a specifice place
+func formatDetails(placeDetails structures.Place, message string) structures.Message{
+	formattedMessage :=
+	"Name: " + placeDetails.Name + " <br/> " +
+	"Distance: " + placeDetails.Distance + " <br/> " +
+	"Rating: " + strconv.FormatFloat(float64(placeDetails.Rating), 'f', -1, 32) + " <br/> " +
+	"Type: " + placeDetails.Type + " <br/> " +
+	"Address: " + placeDetails.Address + " <br/> " +
+	"MobileNumber: " + placeDetails.MobileNumber + " <br/> " +
+	"Link: <a href= " + placeDetails.Link + " > google maps </a>" + " <br/> <br/> " +
+	message
+
+	return structures.Message{
+		Message: formattedMessage,
+	}
+
 }
