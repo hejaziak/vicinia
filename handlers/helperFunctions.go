@@ -2,61 +2,66 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
+	"errors"
 	"net/http"
 	"strings"
 
-	global "vicinia/globals"
+	globals "vicinia/globals"
 	structures "vicinia/structures"
 
 	"github.com/kr/pretty"
+	"github.com/marcossegovia/apiai-go"
 	"github.com/satori/go.uuid"
 	"golang.org/x/net/context"
 	"googlemaps.github.io/maps"
-	"github.com/marcossegovia/apiai-go"
 )
 
-//getList: returns the first 5 nearby places obtained from Google Maps API and updates the session map 
+//getList: returns the first 5 nearby places obtained from Google Maps API and updates the session map
 //with the current places returned to the user
 func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message string) {
-	c, err := global.GetMapClient()
+	//getting the Google Maps client
+	client, err := globals.GetAiClient()
 	if err != nil {
+		pretty.Printf("fatal error: %s \n", err)
 		returnError(w, "")
 		return
 	}
 
-	client, err := apiai.NewClient(
-        &apiai.ClientConfig{
-            Token:      "71027bbaf70a4a53847bedce6b83c94f",
-            QueryLang:  "en",    //Default en
-            SpeechLang: "en-US", //Default en-US
-        },
-    )
+	//Set the query string and your current user identifier.
+	qr, err := client.Query(apiai.Query{
+		Query:     []string{message},
+		SessionId: uuid.String(),
+	})
 
-    if err != nil {
-        returnError(w, "")
-    }
+	if err != nil {
+		pretty.Printf("fatal error: %s \n", err)
+		returnError(w, "")
+		return
+	}
 
-    //Set the query string and your current user identifier.
-    qr, err := client.Query(apiai.Query{Query: []string{message}, SessionId: uuid.String()})
-    if err != nil {
-        pretty.Printf("%v", err)
-    }
+	action := qr.Result.Action
 
-    action := qr.Result.Action
-
-	if(strings.Compare(action,"search") != 0 ){
-
-		res := structures.Message{
+	if strings.Compare(action, "search") != 0 {
+		respondMessage := structures.Message{
 			Message: qr.Result.Fulfillment.Speech,
-		} 
-		if err := json.NewEncoder(w).Encode(res); err != nil {
-			panic(err)
-		}  	
+		}
+		if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
+			pretty.Printf("fatal error: %s \n", err)
+			returnError(w, "")
+			return
+		}
 
-    } else {
-    	
-	    keyword := qr.Result.Params["keyword"]
+	} else {
+
+		//getting the Google Maps client
+		mapsClient, err := globals.GetMapClient()
+		if err != nil {
+			pretty.Printf("fatal error: %s \n", err)
+			returnError(w, "")
+			return
+		}
+
+		keyword := qr.Result.Params["keyword"]
 
 		req := &maps.NearbySearchRequest{
 			Location: &maps.LatLng{Lat: 29.985352, Lng: 31.279194},
@@ -64,40 +69,45 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 			Keyword:  string(keyword.(string)),
 		}
 
-		res, err := c.NearbySearch(context.Background(), req)
+		res, err := mapsClient.NearbySearch(context.Background(), req)
 		if err != nil {
+			pretty.Printf("fatal error: %s \n", err)
 			returnError(w, "sorry, I couldn't find any relevant places")
 			return
 		}
-
-		output , err:= SimplifyList(res.Results)
+		output, err := SimplifyList(res.Results)
 
 		jsonMessage, _ := json.Marshal(output)
 
 		respondMessage := extractMessage(string(jsonMessage), "To get detailed information about a specific place, please type its ID")
 		if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
-			log.Fatalf("fatal error: %s", err)
+			pretty.Printf("fatal error: %s \n", err)
+			returnError(w, "")
+			return
 		}
 
 		inUUID, err := extractUUID(r)
 		if err != nil {
-			returnError(w, "")
+			pretty.Printf("fatal error: %s \n", err)
 			return
 		}
+
 		updateSession(inUUID, res.Results)
-    }
+	}
 }
 
 //getDetails: returns detailed information about a specific place
 func getDetails(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index int) {
-	c, err := global.GetMapClient()
+	c, err := globals.GetMapClient()
 	if err != nil {
+		pretty.Printf("fatal error: %s \n", err)
 		returnError(w, "")
 		return
 	}
 
-	placeID, err := global.GetPlace(uuid, index)
+	placeID, err := globals.GetPlace(uuid, index)
 	if err != nil {
+		pretty.Printf("fatal error: %s \n", err)
 		returnError(w, "")
 		return
 	}
@@ -108,11 +118,14 @@ func getDetails(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index in
 
 	res, err := c.PlaceDetails(context.Background(), req)
 	if err != nil {
-		log.Fatalf("fatal error: %s", err)
+		pretty.Printf("fatal error: %s \n", err)
+		returnError(w, "")
+		return
 	}
 
 	output, err := SimplifyDetails(res)
 	if err != nil {
+		pretty.Printf("fatal error: %s \n", err)
 		returnError(w, "")
 		return
 	}
@@ -120,23 +133,38 @@ func getDetails(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index in
 
 	jsonMessage, _ := json.Marshal(output)
 	respondMessage := extractMessage(string(jsonMessage), "Any other place you want to search for ?")
+
 	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
-		log.Fatalf("fatal error: %s", err)
+		pretty.Printf("fatal error: %s \n", err)
+		returnError(w, "")
+		return
 	}
 }
 
 //extractUUID: returns uuid wich is extraced from the header of the request
 func extractUUID(r *http.Request) (uuid.UUID, error) {
-	uuidNew, err := uuid.FromString(r.Header.Get("Authorization"))
+
+	s := r.Header.Get("Authorization")
+	if s == "" {
+		pretty.Printf("fatal error: Authorization Header empty \n")
+		return uuid.Nil, errors.New("Authorization Header empty")
+	}
+
+	inUUID, err := uuid.FromString(s)
 	if err != nil {
-		log.Fatalf("fatal error: %s", err)
+		pretty.Printf("fatal error: %s \n", err)
 		return uuid.Nil, err
 	}
 
-	return uuidNew, nil
+	if _, err := globals.GetEntry(inUUID); err != nil {
+		pretty.Printf("fatal error: %s \n", err)
+		return uuid.Nil, errors.New("sorry, UUID is not correct, please access /welcome to receive an UUID")
+	}
+
+	return inUUID, nil
 }
 
-//updateSession: updates the last places returned to the user 
+//updateSession: updates the last places returned to the user
 func updateSession(UUID uuid.UUID, input []maps.PlacesSearchResult) error {
 	placeIDs := make([]string, 5)
 
@@ -147,12 +175,29 @@ func updateSession(UUID uuid.UUID, input []maps.PlacesSearchResult) error {
 		placeIDs[i] = input[i].PlaceID
 	}
 
-	err := global.UpdateEntry(UUID, placeIDs)
+	err := globals.UpdateEntry(UUID, placeIDs)
 	if err != nil {
+		pretty.Printf("fatal error: %s \n", err)
 		return err
 	}
 
 	return nil
+}
+
+func returnUnauthorized(w http.ResponseWriter, message string) {
+	w.WriteHeader(http.StatusUnauthorized)
+
+	if message == "" {
+		message = "Oops! something went wrong"
+	}
+
+	respondMessage := structures.Message{
+		Message: message,
+	}
+
+	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
+		pretty.Printf("fatal error: %s \n", err)
+	}
 }
 
 //returnError: returns error message
@@ -166,11 +211,11 @@ func returnError(w http.ResponseWriter, message string) {
 	}
 
 	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
-		log.Fatalf("fatal error: %s", err)
+		pretty.Printf("fatal error: %s \n", err)
 	}
 }
 
-//SimplifyList: returns the list of parameters which will be returned as a response message to the user's generic search
+//SimplifyList : returns the list of parameters which will be returned as a response message to the user's generic search
 func SimplifyList(input []maps.PlacesSearchResult) ([]structures.PlaceListEntity, error) {
 	output := make([]structures.PlaceListEntity, 5)
 
@@ -201,7 +246,7 @@ func SimplifyList(input []maps.PlacesSearchResult) ([]structures.PlaceListEntity
 	return output, nil
 }
 
-//SimplifyDetails: returns the list of parameters which will be returned as a response message to the user's specific query
+//SimplifyDetails : returns the list of parameters which will be returned as a response message to the user's specific query
 func SimplifyDetails(input maps.PlaceDetailsResult) (structures.Place, error) {
 	name := input.Name
 	if name == "" {
@@ -210,6 +255,7 @@ func SimplifyDetails(input maps.PlaceDetailsResult) (structures.Place, error) {
 
 	distance, err := getDistance("29.985352,31.279194", input.PlaceID) //client coordinates are hard-coded for now
 	if err != nil {
+		pretty.Printf("fatal error: %s \n", err)
 		return structures.Place{}, err
 	}
 
@@ -248,7 +294,7 @@ func SimplifyDetails(input maps.PlaceDetailsResult) (structures.Place, error) {
 //getDistance: takes as an input the coordinates of the origin and the place id of the destination,
 //and returns the distance in km between the origin and destination
 func getDistance(cord string, destination string) (string, error) {
-	c, err := global.GetMapClient()
+	c, err := globals.GetMapClient()
 	if err != nil {
 		return "", err
 	}

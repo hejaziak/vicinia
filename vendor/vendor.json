@@ -21,6 +21,12 @@
 			"revisionTime": "2017-03-13T07:41:01Z"
 		},
 		{
+			"checksumSHA1": "0cdNscA7+z4+lKF5usZYz3it/04=",
+			"path": "github.com/joho/godotenv",
+			"revision": "0f92a24bb0cd655270e0a559fbda13f92629510b",
+			"revisionTime": "2017-11-02T02:11:18Z"
+		},
+		{
 			"checksumSHA1": "LyZbFjcAynqI//NA/iH2Ky+ITBk=",
 			"path": "github.com/kamalpy/apiai-go",
 			"revision": "3c3cd6b66ecfc301943cca0263e0ccf358b07875",

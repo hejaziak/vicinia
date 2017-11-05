@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	handlers "vicinia/handlers"
 
 	"github.com/gorilla/mux"
 )
@@ -21,5 +22,7 @@ func NewRouter() *mux.Router {
 			Handler(handler)
 
 	}
+
+	router.NotFoundHandler = http.HandlerFunc(handlers.MiscHandler)
 	return router
 }
