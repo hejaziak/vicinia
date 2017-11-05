@@ -19,27 +19,20 @@ import (
 //getList: returns the first 5 nearby places obtained from Google Maps API and updates the session map
 //with the current places returned to the user
 func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message string) {
-	c, err := globals.GetMapClient()
+	//getting the Google Maps client
+	client, err := globals.GetAiClient()
 	if err != nil {
 		pretty.Printf("fatal error: %s \n", err)
 		returnError(w, "")
 		return
 	}
 
-	client, err := apiai.NewClient(
-		&apiai.ClientConfig{
-			Token:      "71027bbaf70a4a53847bedce6b83c94f",
-			QueryLang:  "en",    //Default en
-			SpeechLang: "en-US", //Default en-US
-		},
-	)
-
-	if err != nil {
-		returnError(w, "")
-	}
-
 	//Set the query string and your current user identifier.
-	qr, err := client.Query(apiai.Query{Query: []string{message}, SessionId: uuid.String()})
+	qr, err := client.Query(apiai.Query{
+		Query:     []string{message},
+		SessionId: uuid.String(),
+	})
+
 	if err != nil {
 		pretty.Printf("fatal error: %s \n", err)
 		returnError(w, "")
@@ -49,16 +42,24 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 	action := qr.Result.Action
 
 	if strings.Compare(action, "search") != 0 {
-		res := structures.Message{
+		respondMessage := structures.Message{
 			Message: qr.Result.Fulfillment.Speech,
 		}
-		if err := json.NewEncoder(w).Encode(res); err != nil {
+		if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
 			pretty.Printf("fatal error: %s \n", err)
 			returnError(w, "")
 			return
 		}
 
 	} else {
+
+		//getting the Google Maps client
+		mapsClient, err := globals.GetMapClient()
+		if err != nil {
+			pretty.Printf("fatal error: %s \n", err)
+			returnError(w, "")
+			return
+		}
 
 		keyword := qr.Result.Params["keyword"]
 
@@ -68,7 +69,7 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 			Keyword:  string(keyword.(string)),
 		}
 
-		res, err := c.NearbySearch(context.Background(), req)
+		res, err := mapsClient.NearbySearch(context.Background(), req)
 		if err != nil {
 			pretty.Printf("fatal error: %s \n", err)
 			returnError(w, "sorry, I couldn't find any relevant places")
@@ -245,7 +246,7 @@ func SimplifyList(input []maps.PlacesSearchResult) ([]structures.PlaceListEntity
 	return output, nil
 }
 
-//SimplifyDetails: returns the list of parameters which will be returned as a response message to the user's specific query
+//SimplifyDetails : returns the list of parameters which will be returned as a response message to the user's specific query
 func SimplifyDetails(input maps.PlaceDetailsResult) (structures.Place, error) {
 	name := input.Name
 	if name == "" {
