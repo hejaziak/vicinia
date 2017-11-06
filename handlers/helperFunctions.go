@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"strconv"
-
+	
 	globals "vicinia/globals"
 	structures "vicinia/structures"
 
@@ -16,6 +16,26 @@ import (
 	"golang.org/x/net/context"
 	"googlemaps.github.io/maps"
 )
+
+//setLocation: sets the location of client in locations map
+func setLocation(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, location string){
+	coordinates := strings.Split(location , ",")
+
+	if err:=globals.CreateLocationEntry(uuid, coordinates[0], coordinates[1]); err!=nil {
+		pretty.Printf("fatal error: %s \n", err)
+		returnError(w, "You have already entered your location successfully")
+		return
+	}
+
+	respondMessage :=structures.Message{
+		Message: "That's great.Now, where do you want to go today ?",
+	} 
+	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
+		pretty.Printf("fatal error: %s \n", err)
+		returnError(w, "")
+		return
+	} 
+}
 
 //getList: returns the first 5 nearby places obtained from Google Maps API and updates the session map
 //with the current places returned to the user
@@ -64,8 +84,29 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 
 		keyword := qr.Result.Params["keyword"]
 
+		location,err := globals.GetLocationEntry(uuid) //location contains latitude and longitude
+		if err!=nil {
+			pretty.Printf("fatal error: %s \n", err)
+			returnError(w, "Please provide me first with your location")
+			return			
+		}
+
+		latitude, err := strconv.ParseFloat(location[0], 64)
+		if err != nil {
+			pretty.Printf("fatal error: %s \n", err)
+			returnError(w, "")
+			return
+		}
+
+		longitude, err := strconv.ParseFloat(location[1], 64)
+		if err != nil {
+			pretty.Printf("fatal error: %s \n", err)
+			returnError(w, "")
+			return
+		}
+
 		req := &maps.NearbySearchRequest{
-			Location: &maps.LatLng{Lat: 29.985352, Lng: 31.279194},
+			Location: &maps.LatLng{Lat: latitude, Lng: longitude},
 			RankBy:   "distance",
 			Keyword:  string(keyword.(string)),
 		}
@@ -77,7 +118,7 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 			return
 		}
 		
-		output, err := SimplifyList(res.Results)
+		output, err := SimplifyList(uuid, res.Results)
 		if err != nil {
 			pretty.Printf("fatal error: %s \n", err)
 			returnError(w, "")
@@ -90,7 +131,7 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 			returnError(w, "")
 			return
 		}
-
+		
 		inUUID, err := extractUUID(r)
 		if err != nil {
 			pretty.Printf("fatal error: %s \n", err)
@@ -98,6 +139,7 @@ func getList(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message str
 		}
 
 		updateSession(inUUID, res.Results)
+		
 	}
 }
 
@@ -128,7 +170,7 @@ func getDetails(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index in
 		return
 	}
 
-	output, err := SimplifyDetails(res)
+	output, err := SimplifyDetails(uuid, res)
 	if err != nil {
 		pretty.Printf("fatal error: %s \n", err)
 		returnError(w, "")
@@ -177,13 +219,13 @@ func updateSession(UUID uuid.UUID, input []maps.PlacesSearchResult) error {
 		}
 		placeIDs[i] = input[i].PlaceID
 	}
-
+	
 	err := globals.UpdateEntry(UUID, placeIDs)
 	if err != nil {
 		pretty.Printf("fatal error: %s \n", err)
 		return err
 	}
-
+	
 	return nil
 }
 
@@ -219,7 +261,7 @@ func returnError(w http.ResponseWriter, message string) {
 }
 
 //SimplifyList : returns the list of parameters which will be returned as a response message to the user's generic search
-func SimplifyList(input []maps.PlacesSearchResult) ([]structures.PlaceListEntity, error) {
+func SimplifyList(uuid uuid.UUID, input []maps.PlacesSearchResult) ([]structures.PlaceListEntity, error) {
 	output := make([]structures.PlaceListEntity, 5)
 
 	for i := 0; i < 5; i++ {
@@ -233,7 +275,13 @@ func SimplifyList(input []maps.PlacesSearchResult) ([]structures.PlaceListEntity
 			name = "not specified"
 		}
 
-		distance, err := getDistance("29.985352,31.279194", input[i].PlaceID) //client coordinates are hard-coded for now
+		location, err := globals.GetLocationEntry(uuid) //location contains latitude and longitude
+		if err!=nil {
+			pretty.Printf("fatal error: %s \n", err)
+			return []structures.PlaceListEntity{}, err			
+		}
+		
+		distance, err := getDistance(location[0]+","+location[1], input[i].PlaceID) 
 		if err != nil {
 			return nil, err
 		}
@@ -250,13 +298,19 @@ func SimplifyList(input []maps.PlacesSearchResult) ([]structures.PlaceListEntity
 }
 
 //SimplifyDetails : returns the list of parameters which will be returned as a response message to the user's specific query
-func SimplifyDetails(input maps.PlaceDetailsResult) (structures.Place, error) {
+func SimplifyDetails(uuid uuid.UUID, input maps.PlaceDetailsResult) (structures.Place, error) {
 	name := input.Name
 	if name == "" {
 		name = "not specified"
 	}
 
-	distance, err := getDistance("29.985352,31.279194", input.PlaceID) //client coordinates are hard-coded for now
+	location, err := globals.GetLocationEntry(uuid) //location contains latitude and longitude
+	if err!=nil {
+		pretty.Printf("fatal error: %s \n", err)
+		return structures.Place{}, err			
+	}
+
+	distance, err := getDistance(location[0]+","+location[1], input.PlaceID) 
 	if err != nil {
 		pretty.Printf("fatal error: %s \n", err)
 		return structures.Place{}, err
@@ -350,4 +404,24 @@ func formatDetails(placeDetails structures.Place, message string) structures.Mes
 		Message: formattedMessage,
 	}
 
+}
+
+//checkLocationFormat: checks that the location is entered in the correct format
+func checkLocationFormat(location string) error{
+	
+	if location=="" {
+		return errors.New("empty location")
+	}
+	splittedLocation := strings.Split(location , ",")
+	if len(splittedLocation) > 2{
+		return errors.New("more than one ',' in location")
+	}
+	if _, err := strconv.ParseFloat(splittedLocation[0], 64); err!=nil{
+		return errors.New("syntax error in latitude")
+	}
+	if _, err := strconv.ParseFloat(splittedLocation[1], 64); err!=nil{
+		return errors.New("syntax error in longitude")
+	}
+
+	return nil
 }

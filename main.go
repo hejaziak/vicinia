@@ -19,7 +19,8 @@ func main() {
 	}
 
 	global.InitSessions()
-
+	global.InitLocations()
+	
 	mapsKey := os.Getenv("GoogleMapsAPI")
 	global.InitMapClient(mapsKey)
 

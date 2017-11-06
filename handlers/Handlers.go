@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"strings"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -34,7 +35,7 @@ func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 
 	newUUID := uuid.NewV1()
 	response := structures.WelcomeStruct{
-		Message: "Welcome ,where do you want to go ?",
+		Message: "Welcome, please enter yor location in the following format <br/> location:<latitude>,<longitutde>",
 		UUID:    newUUID,
 	}
 
@@ -63,7 +64,7 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 		returnUnauthorized(w, "sorry, UUID is not correct, please access /welcome to receive an UUID")
 		return
 	}
-
+	
 	var requestBody structures.Message
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		pretty.Printf("fatal error: %s \n", err)
@@ -71,11 +72,27 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	index, err := strconv.Atoi(requestBody.Message)
-	if err != nil {
-		getList(w, r, inUUID, requestBody.Message)
-	} else {
-		getDetails(w, r, inUUID, index-1)
+	splittedMessage := strings.Split(requestBody.Message , ":")
+
+	if ( strings.Compare(splittedMessage[0] , "location") == 0 ) {
+		if len(splittedMessage) ==1 { //handles this case--> "message":"location"
+			returnError(w, "You have entered incorrect format for your location.Please try again")
+			return			
+		}
+		if err := checkLocationFormat(splittedMessage[1]); err!=nil {
+			pretty.Printf("fatal error: %s \n", err)
+			returnError(w, "You have entered incorrect format for your location.Please try again")
+			return
+		}
+		setLocation(w, r, inUUID, splittedMessage[1])
+
+	}else {
+		index, err := strconv.Atoi(requestBody.Message)
+		if err != nil {
+			getList(w, r, inUUID, requestBody.Message)
+		} else {
+			getDetails(w, r, inUUID, index-1)
+		}
 	}
 }
 
