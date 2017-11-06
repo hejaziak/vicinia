@@ -10,20 +10,18 @@ import (
 
 var sessions map[uuid.UUID][]string
 
-//InitSessions : intializes the session map
+//InitSessions : intializes the sessions map
 func InitSessions() {
 	sessions = make(map[uuid.UUID][]string)
 }
 
-//CreateEntry : creates new entry in session's map
+//CreateEntry : creates new entry in sessions map
 func CreateEntry(key uuid.UUID) error {
-	test := sessions[key]
-
-	if len(test) > 0 {
+	if test := sessions[key]; len(test) > 0 {
 		return errors.New("UUID already exists")
 	}
 
-	sessions[key] = make([]string, 1, 5)
+	sessions[key] = make([]string, 5)
 
 	time.AfterFunc(time.Duration(24*time.Hour), func() {
 		if err := DeleteEntry(key); err != nil {
@@ -37,7 +35,6 @@ func CreateEntry(key uuid.UUID) error {
 //GetEntry : returns an entry in session's map
 func GetEntry(key uuid.UUID) ([]string, error) {
 	test := sessions[key]
-
 	if len(test) <= 0 {
 		return nil, errors.New("UUID doesn't exists")
 	}
@@ -67,12 +64,12 @@ func GetPlace(key uuid.UUID, index int) (string, error) {
 }
 
 //UpdateEntry : update a entry in session's map
-func UpdateEntry(key uuid.UUID, placeIDs []string) error {
+func UpdateEntry(key uuid.UUID, latlang []string) error {
 	if _, err := GetEntry(key); err != nil {
 		return err
 	}
 
-	sessions[key] = placeIDs
+	sessions[key] = latlang
 	return nil
 }
 
@@ -88,7 +85,7 @@ func DeleteEntry(key uuid.UUID) error {
 
 //PrintMap : displays session's contents
 func PrintMap() {
-	pretty.Println("Map ======================:")
+	pretty.Println("Sessions -Map ======================")
 	for key, value := range sessions {
 		pretty.Println("Key:", key, "Value:", value)
 	}

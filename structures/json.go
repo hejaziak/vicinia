@@ -4,7 +4,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-type WelcomeStruct struct {
+type WelcomeMessage struct {
 	Message string    `json:"message"`
 	UUID    uuid.UUID `json:"uuid"`
 }

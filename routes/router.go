@@ -3,17 +3,18 @@ package routes
 import (
 	"net/http"
 	handlers "vicinia/handlers"
+	middleware "vicinia/middleware"
 
 	"github.com/gorilla/mux"
 )
 
-//NewRouter: creates a new router and returns it
+//NewRouter : creates a new router and returns it
 func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
 		var handler http.Handler
 		handler = route.HandlerFunc
-		handler = Logger(handler, route.Name)
+		handler = middleware.Logger(handler, route.Name)
 
 		router.
 			Methods(route.Method).

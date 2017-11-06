@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	datastructures "vicinia/datastructures"
 	global "vicinia/globals"
 	"vicinia/routes"
 
@@ -18,9 +19,9 @@ func main() {
 		pretty.Println("Error loading .env file")
 	}
 
-	global.InitSessions()
-	global.InitLocations()
-	
+	datastructures.InitSessions()
+	datastructures.InitLocations()
+
 	mapsKey := os.Getenv("GoogleMapsAPI")
 	global.InitMapClient(mapsKey)
 
