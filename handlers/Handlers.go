@@ -35,7 +35,7 @@ func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 
 	newUUID := uuid.NewV1()
 	response := structures.WelcomeStruct{
-		Message: "Welcome, please enter yor location in the following format <br/> location:<latitude>,<longitutde>",
+		Message: "Welcome, please enter yor location in the following format <br/> location:latitude,longitutde",
 		UUID:    newUUID,
 	}
 
