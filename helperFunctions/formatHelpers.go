@@ -132,5 +132,4 @@ func formatDetails(placeDetails structures.Place, message string) structures.Mes
 	return structures.Message{
 		Message: formattedMessage,
 	}
-
 }

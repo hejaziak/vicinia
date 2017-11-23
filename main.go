@@ -6,19 +6,14 @@ import (
 	"os"
 	datastructures "vicinia/datastructures"
 	global "vicinia/globals"
-	"vicinia/routes"
+	routes "vicinia/routes"
 
 	cors "github.com/heppu/simple-cors"
-	"github.com/joho/godotenv"
-	"github.com/kr/pretty"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		pretty.Println("Error loading .env file")
-	}
-
 	datastructures.InitSessions()
 	datastructures.InitLocations()
 

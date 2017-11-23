@@ -50,7 +50,7 @@ func GetPlace(key uuid.UUID, index int) (string, error) {
 		return "", err
 	}
 
-	if index > 5 && index < 0 {
+	if index > 5 || index < 1 {
 		return "", errors.New("index out of bounds")
 	}
 

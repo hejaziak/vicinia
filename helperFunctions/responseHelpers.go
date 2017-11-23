@@ -27,7 +27,7 @@ func ListHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message
 		return
 	}
 
-	keyword := aiResponse.Params["keyword"]
+	keyword := aiResponse.Params["keyword"].(string)
 	result, err := GetList(uuid, keyword)
 	if err != nil {
 		if len(result) == 0 {
@@ -73,6 +73,7 @@ func DetailsHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, inde
 	}
 }
 
+//LocationHandler : sets cords in database
 func LocationHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, location string) {
 	if err := CheckLocationFormat(location); err != nil {
 		pretty.Printf("fatal error: %s \n", err)
@@ -80,13 +81,19 @@ func LocationHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, loc
 		return
 	}
 
-	reply := SetLocation(uuid, location)
-	if reply != "" {
-		ReturnMessage(w, reply)
+	if err := SetLocation(uuid, location); err != nil {
+		ReturnMessage(w, "You have already entered your location successfully")
 		return
 	}
 
 	ReturnMessage(w, "You're location is now set, where do you want to go today ?")
+}
+
+//ReturnError : returns 400 error message
+func ReturnError(w http.ResponseWriter, message string) {
+	w.WriteHeader(http.StatusBadRequest)
+
+	ReturnMessage(w, message)
 }
 
 //ReturnUnauthorized : returns unauthorized error message
@@ -98,6 +105,8 @@ func ReturnUnauthorized(w http.ResponseWriter, message string) {
 
 //ReturnMessage : returns a message
 func ReturnMessage(w http.ResponseWriter, message string) {
+	w.Header().Set("Content-Type", "application/json")
+
 	if message == "" {
 		message = "Oops! something went wrong"
 	}

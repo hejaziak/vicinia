@@ -42,11 +42,11 @@ func UpdateSession(UUID uuid.UUID, input []maps.PlacesSearchResult) error {
 		if i >= len(input) {
 			break
 		}
+
 		placeIDs[i] = input[i].PlaceID
 	}
 
-	err := datastructures.UpdateEntry(UUID, placeIDs)
-	if err != nil {
+	if err := datastructures.UpdateEntry(UUID, placeIDs); err != nil {
 		pretty.Printf("fatal error: %s \n", err)
 		return err
 	}

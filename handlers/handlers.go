@@ -18,13 +18,13 @@ import (
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	body := "Available Routes:<br/>" +
+	response := "Available Routes:<br/>" +
 		"GET  /welcome - receive uuid <br/>" +
 		"POST /chat    - converse with chatbot <br/>" +
 		"GET  /        - welcome page        (current) <br/>" +
 		"<br/>We are happy to serve you !!"
 
-	helpers.ReturnMessage(w, body)
+	helpers.ReturnMessage(w, response)
 }
 
 //WelcomeHandler : creates a new uuid and returns a welcome message

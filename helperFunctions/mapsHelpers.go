@@ -14,7 +14,7 @@ import (
 
 //GetList : returns the first 5 nearby places obtained from Google Maps API and updates the session map
 //with the current places returned to the user
-func GetList(uuid uuid.UUID, keyword interface{}) ([]maps.PlacesSearchResult, error) {
+func GetList(uuid uuid.UUID, keyword string) ([]maps.PlacesSearchResult, error) {
 	//getting the Google Maps client
 	mapsClient, err := globals.GetMapClient()
 	if err != nil {
@@ -34,7 +34,7 @@ func GetList(uuid uuid.UUID, keyword interface{}) ([]maps.PlacesSearchResult, er
 	req := &maps.NearbySearchRequest{
 		Location: &maps.LatLng{Lat: latitude, Lng: longitude},
 		RankBy:   "distance",
-		Keyword:  string(keyword.(string)),
+		Keyword:  keyword,
 	}
 
 	res, err := mapsClient.NearbySearch(context.Background(), req)

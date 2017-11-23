@@ -8,6 +8,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+// GetIntent : contacts the AI API and get the intent
 func GetIntent(uuid uuid.UUID, message string) (apiai.Result, error) {
 	client, err := globals.GetAiClient()
 	if err != nil {

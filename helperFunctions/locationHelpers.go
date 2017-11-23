@@ -12,15 +12,15 @@ import (
 )
 
 //SetLocation : sets the location of client in locations map
-func SetLocation(uuid uuid.UUID, location string) string {
+func SetLocation(uuid uuid.UUID, location string) error {
 	coordinates := strings.Split(location, ",")
 
 	if err := datastructures.CreateLocationEntry(uuid, coordinates[0], coordinates[1]); err != nil {
 		pretty.Printf("fatal error: %s \n", err)
-		return "You have already entered your location successfully"
+		return errors.New("You have already entered your location successfully")
 	}
 
-	return ""
+	return nil
 }
 
 //CheckLocationFormat : checks that the location is entered in the correct format

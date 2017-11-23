@@ -28,7 +28,6 @@ func CreateLocationEntry(key uuid.UUID, latitude string, longitude string) error
 		if err := DeleteLocationEntry(key); err != nil {
 			return
 		}
-
 	})
 
 	return nil
