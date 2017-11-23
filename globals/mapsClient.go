@@ -11,13 +11,14 @@ var mapsClient *maps.Client
 
 //InitMapClient : intializes the MapsClient
 func InitMapClient(apiKey string) error {
-	var err error
-	mapsClient, err = maps.NewClient(maps.WithAPIKey(apiKey))
+	mapsCandidate, err := maps.NewClient(maps.WithAPIKey(apiKey))
+
 	if err != nil {
 		pretty.Printf("fatal error: %s \n", err)
 		return err
 	}
 
+	mapsClient = mapsCandidate
 	return nil
 }
 

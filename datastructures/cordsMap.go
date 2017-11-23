@@ -2,6 +2,7 @@ package globals
 
 import (
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/kr/pretty"
@@ -17,18 +18,16 @@ func InitLocations() {
 
 //CreateLocationEntry : creates new entry in locations map
 func CreateLocationEntry(key uuid.UUID, latitude string, longitude string) error {
-	_, exists := locations[key]
-	if(exists==true){
+	if _, exists := locations[key]; exists == true {
 		return errors.New("UUID already exists in locations map")
 	}
 
-	locations[key] = []string{latitude,longitude}
+	locations[key] = []string{latitude, longitude}
 
-	time.AfterFunc( time.Duration(24*time.Hour), func() {
+	time.AfterFunc(time.Duration(24*time.Hour), func() {
 		if err := DeleteLocationEntry(key); err != nil {
 			return
 		}
-		
 	})
 
 	return nil
@@ -37,17 +36,40 @@ func CreateLocationEntry(key uuid.UUID, latitude string, longitude string) error
 //GetLocationEntry : returns an entry in locations map
 func GetLocationEntry(key uuid.UUID) ([]string, error) {
 	location, exists := locations[key]
-	if(exists==false){
+	if exists == false {
 		return nil, errors.New("UUID doesn't exist in locations map")
 	}
 
 	return location, nil
 }
 
+//GetLongLat : returns long and lat floats in locations map
+func GetLongLat(key uuid.UUID) (float64, float64, error) {
+	location, err := GetLocationEntry(key) //location contains latitude and longitude
+
+	if err != nil {
+		pretty.Printf("fatal error: %s \n", err)
+		return 0, 0, errors.New("location not set")
+	}
+
+	latitude, err := strconv.ParseFloat(location[0], 64)
+	if err != nil {
+		pretty.Printf("fatal error: %s \n", err)
+		return 0, 0, err
+	}
+
+	longitude, err := strconv.ParseFloat(location[1], 64)
+	if err != nil {
+		pretty.Printf("fatal error: %s \n", err)
+		return 0, 0, err
+	}
+
+	return longitude, latitude, nil
+}
+
 //DeleteLocationEntry : deletes an entry in locations map
 func DeleteLocationEntry(key uuid.UUID) error {
-	_, exists := locations[key]
-	if(exists==false){
+	if _, exists := locations[key]; exists == false {
 		return errors.New("UUID doesn't exist in locations map")
 	}
 
@@ -57,7 +79,7 @@ func DeleteLocationEntry(key uuid.UUID) error {
 
 //PrintLocationsMap : displays contents of locations map
 func PrintLocationsMap() {
-	pretty.Println("Map ======================:")
+	pretty.Println("Cords -Map =========================")
 	for key, value := range locations {
 		pretty.Println("Key:", key, "Value:", value)
 	}

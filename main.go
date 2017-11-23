@@ -4,23 +4,19 @@ import (
 	"log"
 	"net/http"
 	"os"
+	datastructures "vicinia/datastructures"
 	global "vicinia/globals"
-	"vicinia/routes"
+	routes "vicinia/routes"
 
 	cors "github.com/heppu/simple-cors"
-	"github.com/joho/godotenv"
-	"github.com/kr/pretty"
 )
 
-func main() {
-	err := godotenv.Load()
-	if err != nil {
-		pretty.Println("Error loading .env file")
-	}
+import _ "github.com/joho/godotenv/autoload"
 
-	global.InitSessions()
-	global.InitLocations()
-	
+func main() {
+	datastructures.InitSessions()
+	datastructures.InitLocations()
+
 	mapsKey := os.Getenv("GoogleMapsAPI")
 	global.InitMapClient(mapsKey)
 
