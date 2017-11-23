@@ -32,7 +32,7 @@ func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	newUUID := uuid.NewV1()
-	response := structures.WelcomeMessage{
+	response := structures.UUIDMessage{
 		Message: "Welcome, please enter yor location in the following format <br/> location:latitude,longitutde",
 		UUID:    newUUID,
 	}
@@ -84,18 +84,22 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		helpers.LocationHandler(w, r, inUUID, splittedMessage[1])
 		break
+
 	case "details":
 		if len(splittedMessage) == 1 { //handles this case--> "message":"details"
 			helpers.ReturnMessage(w, "You have entered incorrect format for your place details query. please enter details:<place index>")
 			return
 		}
 
-		index, err := strconv.Atoi(requestBody.Message)
+		index, err := strconv.Atoi(splittedMessage[1])
 		if err != nil {
 			helpers.ReturnMessage(w, "You have entered incorrect format for your place details query. please enter details:<place index>")
+			return
 		}
+
 		helpers.DetailsHandler(w, r, inUUID, index-1)
 		break
+
 	default:
 		helpers.ListHandler(w, r, inUUID, requestBody.Message)
 	}

@@ -89,20 +89,6 @@ func LocationHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, loc
 	ReturnMessage(w, "You're location is now set, where do you want to go today ?")
 }
 
-//ReturnError : returns 400 error message
-func ReturnError(w http.ResponseWriter, message string) {
-	w.WriteHeader(http.StatusBadRequest)
-
-	ReturnMessage(w, message)
-}
-
-//ReturnUnauthorized : returns unauthorized error message
-func ReturnUnauthorized(w http.ResponseWriter, message string) {
-	w.WriteHeader(http.StatusUnauthorized)
-
-	ReturnMessage(w, message)
-}
-
 //ReturnMessage : returns a message
 func ReturnMessage(w http.ResponseWriter, message string) {
 	w.Header().Set("Content-Type", "application/json")
@@ -118,4 +104,18 @@ func ReturnMessage(w http.ResponseWriter, message string) {
 	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
 		pretty.Printf("fatal error: %s \n", err)
 	}
+}
+
+//ReturnError : returns 400 error message
+func ReturnError(w http.ResponseWriter, message string) {
+	w.WriteHeader(http.StatusBadRequest)
+
+	ReturnMessage(w, message)
+}
+
+//ReturnUnauthorized : returns unauthorized error message
+func ReturnUnauthorized(w http.ResponseWriter, message string) {
+	w.WriteHeader(http.StatusUnauthorized)
+
+	ReturnMessage(w, message)
 }

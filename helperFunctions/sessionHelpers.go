@@ -13,7 +13,6 @@ import (
 
 //ExtractUUID : returns uuid wich is extraced from the header of the request
 func ExtractUUID(r *http.Request) (uuid.UUID, error) {
-
 	s := r.Header.Get("Authorization")
 	if s == "" {
 		pretty.Printf("fatal error: Authorization Header empty \n")

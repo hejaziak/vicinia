@@ -2,6 +2,7 @@ package helperFunctions
 
 import (
 	"context"
+	"errors"
 
 	globals "vicinia/globals"
 
@@ -15,15 +16,8 @@ import (
 //GetList : returns the first 5 nearby places obtained from Google Maps API and updates the session map
 //with the current places returned to the user
 func GetList(uuid uuid.UUID, keyword string) ([]maps.PlacesSearchResult, error) {
-	//getting the Google Maps client
-	mapsClient, err := globals.GetMapClient()
-	if err != nil {
-		pretty.Printf("fatal error: %s \n", err)
-		return nil, err
-	}
-
 	if keyword == "" {
-		return nil, err
+		return nil, errors.New("empty keywords")
 	}
 
 	latitude, longitude, err := datastructures.GetLongLat(uuid)
@@ -35,6 +29,12 @@ func GetList(uuid uuid.UUID, keyword string) ([]maps.PlacesSearchResult, error) 
 		Location: &maps.LatLng{Lat: latitude, Lng: longitude},
 		RankBy:   "distance",
 		Keyword:  keyword,
+	}
+
+	mapsClient, err := globals.GetMapClient()
+	if err != nil {
+		pretty.Printf("fatal error: %s \n", err)
+		return nil, err
 	}
 
 	res, err := mapsClient.NearbySearch(context.Background(), req)
@@ -49,12 +49,6 @@ func GetList(uuid uuid.UUID, keyword string) ([]maps.PlacesSearchResult, error) 
 
 //GetDetails : returns detailed information about a specific place
 func GetDetails(uuid uuid.UUID, index int) (maps.PlaceDetailsResult, error) {
-	c, err := globals.GetMapClient()
-	if err != nil {
-		pretty.Printf("fatal error: %s \n", err)
-		return maps.PlaceDetailsResult{}, err
-	}
-
 	placeID, err := datastructures.GetPlace(uuid, index)
 	if err != nil {
 		pretty.Printf("fatal error: %s \n", err)
@@ -65,7 +59,13 @@ func GetDetails(uuid uuid.UUID, index int) (maps.PlaceDetailsResult, error) {
 		PlaceID: placeID,
 	}
 
-	res, err := c.PlaceDetails(context.Background(), req)
+	mapsClient, err := globals.GetMapClient()
+	if err != nil {
+		pretty.Printf("fatal error: %s \n", err)
+		return maps.PlaceDetailsResult{}, err
+	}
+
+	res, err := mapsClient.PlaceDetails(context.Background(), req)
 	if err != nil {
 		pretty.Printf("fatal error: %s \n", err)
 		return maps.PlaceDetailsResult{}, err
@@ -82,18 +82,18 @@ func GetDetails(uuid uuid.UUID, index int) (maps.PlaceDetailsResult, error) {
 //GetDistance : takes as an input the coordinates of the origin and the place id of the destination,
 //and returns the distance in km between the origin and destination
 func GetDistance(cord string, destination string) (string, error) {
-	c, err := globals.GetMapClient()
-	if err != nil {
-		return "", err
-	}
-
 	req := &maps.DistanceMatrixRequest{
 		Origins:      []string{cord},
 		Destinations: []string{"place_id:" + destination},
 		Units:        "metric",
 	}
 
-	res, err := c.DistanceMatrix(context.Background(), req)
+	mapsClient, err := globals.GetMapClient()
+	if err != nil {
+		return "", err
+	}
+
+	res, err := mapsClient.DistanceMatrix(context.Background(), req)
 	if err != nil {
 		return "", err
 	}

@@ -11,9 +11,7 @@ var aiClient *apiai.ApiClient
 
 //InitAiClient : intializes the MapsClient
 func InitAiClient(apiKey string) error {
-	var err error
-
-	aiClient, err = apiai.NewClient(
+	aiCandidate, err := apiai.NewClient(
 		&apiai.ClientConfig{
 			Token:      apiKey,
 			QueryLang:  "en",    //Default en
@@ -26,6 +24,7 @@ func InitAiClient(apiKey string) error {
 		return err
 	}
 
+	aiClient = aiCandidate
 	return nil
 }
 

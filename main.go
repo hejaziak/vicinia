@@ -9,9 +9,9 @@ import (
 	routes "vicinia/routes"
 
 	cors "github.com/heppu/simple-cors"
-
-	_ "github.com/joho/godotenv/autoload"
 )
+
+import _ "github.com/joho/godotenv/autoload"
 
 func main() {
 	datastructures.InitSessions()
