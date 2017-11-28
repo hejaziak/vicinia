@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"strconv"
 
 	structures "vicinia/structures"
 
@@ -13,8 +14,8 @@ import (
 
 //ListHandler : returns the first 5 nearby places obtained from Google Maps API and updates the session map
 //with the current places returned to the user
-func ListHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message string) {
-	aiResponse, err := GetIntent(uuid, message)
+func ListHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, requestBody structures.LatLongMessage) {
+	aiResponse, err := GetIntent(uuid, requestBody.Message)
 	if err != nil {
 		ReturnMessage(w, "")
 		return
@@ -27,8 +28,21 @@ func ListHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message
 		return
 	}
 
+	latitude, err := strconv.ParseFloat(requestBody.Latitude, 64)
+	if err != nil {
+		pretty.Printf("fatal error: %s \n", err)
+		ReturnMessage(w, "")
+		return
+	}
+
+	longitude, err := strconv.ParseFloat(requestBody.Longitude, 64)
+	if err != nil {
+		pretty.Printf("fatal error: %s \n", err)
+		ReturnMessage(w, "")
+		return
+	}
 	keyword := aiResponse.Params["keyword"].(string)
-	result, err := GetList(uuid, keyword)
+	result, err := GetList(latitude, longitude, keyword)
 	if err != nil {
 		if len(result) == 0 {
 			ReturnMessage(w, "Couldn't find any nearby places with keyword specified")
@@ -39,7 +53,7 @@ func ListHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, message
 		return
 	}
 
-	output, err := SimplifyList(uuid, result)
+	output, err := SimplifyList(requestBody.Latitude, requestBody.Longitude, result)
 	if err != nil {
 		pretty.Printf("fatal error: %s \n", err)
 		ReturnMessage(w, "")
