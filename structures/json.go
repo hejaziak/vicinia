@@ -12,3 +12,10 @@ type UUIDMessage struct {
 type Message struct {
 	Message string `json:"message"`
 }
+
+type LatLongMessage struct {
+	Message string `json:"message"`
+	Latitude string `json:"latitude"`
+	Longitude string `json:"longitude"`
+	
+}

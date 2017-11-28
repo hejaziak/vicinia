@@ -15,14 +15,9 @@ import (
 
 //GetList : returns the first 5 nearby places obtained from Google Maps API and updates the session map
 //with the current places returned to the user
-func GetList(uuid uuid.UUID, keyword string) ([]maps.PlacesSearchResult, error) {
+func GetList(latitude float64, longitude float64, keyword string) ([]maps.PlacesSearchResult, error) {
 	if keyword == "" {
 		return nil, errors.New("empty keywords")
-	}
-
-	latitude, longitude, err := datastructures.GetLongLat(uuid)
-	if err != nil {
-		return nil, err
 	}
 
 	req := &maps.NearbySearchRequest{

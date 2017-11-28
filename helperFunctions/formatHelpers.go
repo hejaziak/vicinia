@@ -12,7 +12,7 @@ import (
 )
 
 //SimplifyList : returns the list of parameters which will be returned as a response message to the user's generic search
-func SimplifyList(uuid uuid.UUID, input []maps.PlacesSearchResult) ([]structures.PlaceListEntity, error) {
+func SimplifyList(latitude string, longitude string, input []maps.PlacesSearchResult) ([]structures.PlaceListEntity, error) {
 	output := make([]structures.PlaceListEntity, 5)
 
 	for i := 0; i < 5; i++ {
@@ -26,13 +26,7 @@ func SimplifyList(uuid uuid.UUID, input []maps.PlacesSearchResult) ([]structures
 			name = "not specified"
 		}
 
-		location, err := datastructures.GetLocationEntry(uuid) //location contains latitude and longitude
-		if err != nil {
-			pretty.Printf("fatal error: %s \n", err)
-			return []structures.PlaceListEntity{}, err
-		}
-
-		distance, err := GetDistance(location[0]+","+location[1], input[i].PlaceID)
+		distance, err := GetDistance(latitude+","+longitude, input[i].PlaceID)
 		if err != nil {
 			return nil, err
 		}

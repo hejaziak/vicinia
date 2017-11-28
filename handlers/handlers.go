@@ -3,8 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
-	"strings"
 
 	datastructures "vicinia/datastructures"
 	helpers "vicinia/helperFunctions"
@@ -33,7 +31,7 @@ func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 
 	newUUID := uuid.NewV1()
 	response := structures.UUIDMessage{
-		Message: "Welcome, please enter yor location in the following format <br/> location:latitude,longitutde",
+		Message: "Welcome, where do you want to go today ?",
 		UUID:    newUUID,
 	}
 
@@ -66,13 +64,16 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//decode message json to object
-	var requestBody structures.Message
+	var requestBody structures.LatLongMessage
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		pretty.Printf("fatal error: %s \n", err)
 		helpers.ReturnMessage(w, "")
 		return
 	}
 
+	helpers.ListHandler(w, r, inUUID, requestBody)
+
+	/*	
 	splittedMessage := strings.Split(requestBody.Message, ":")
 
 	//forward message to appropriate handler
@@ -103,6 +104,8 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		helpers.ListHandler(w, r, inUUID, requestBody.Message)
 	}
+	*/
+
 }
 
 // MiscHandler : handler for all unchaught routes
