@@ -6,23 +6,15 @@ import (
 
 	globals "vicinia/globals"
 
-	datastructures "vicinia/datastructures"
-
 	"github.com/kr/pretty"
-	"github.com/satori/go.uuid"
 	"googlemaps.github.io/maps"
 )
 
 //GetList : returns the first 5 nearby places obtained from Google Maps API and updates the session map
 //with the current places returned to the user
-func GetList(uuid uuid.UUID, keyword string) ([]maps.PlacesSearchResult, error) {
+func GetList(latitude float64, longitude float64, keyword string) ([]maps.PlacesSearchResult, error) {
 	if keyword == "" {
 		return nil, errors.New("empty keywords")
-	}
-
-	latitude, longitude, err := datastructures.GetLongLat(uuid)
-	if err != nil {
-		return nil, err
 	}
 
 	req := &maps.NearbySearchRequest{
@@ -48,13 +40,7 @@ func GetList(uuid uuid.UUID, keyword string) ([]maps.PlacesSearchResult, error) 
 }
 
 //GetDetails : returns detailed information about a specific place
-func GetDetails(uuid uuid.UUID, index int) (maps.PlaceDetailsResult, error) {
-	placeID, err := datastructures.GetPlace(uuid, index)
-	if err != nil {
-		pretty.Printf("fatal error: %s \n", err)
-		return maps.PlaceDetailsResult{}, err
-	}
-
+func GetDetails(placeID string) (maps.PlaceDetailsResult, error) {
 	req := &maps.PlaceDetailsRequest{
 		PlaceID: placeID,
 	}

@@ -3,8 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
-	"strings"
 
 	datastructures "vicinia/datastructures"
 	helpers "vicinia/helperFunctions"
@@ -33,7 +31,7 @@ func WelcomeHandler(w http.ResponseWriter, r *http.Request) {
 
 	newUUID := uuid.NewV1()
 	response := structures.UUIDMessage{
-		Message: "Welcome, please enter yor location in the following format <br/> location:latitude,longitutde",
+		Message: "Welcome, where do you want to go today ?",
 		UUID:    newUUID,
 	}
 
@@ -66,43 +64,56 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//decode message json to object
-	var requestBody structures.Message
+	var requestBody structures.LatLongMessage
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
 		pretty.Printf("fatal error: %s \n", err)
 		helpers.ReturnMessage(w, "")
 		return
 	}
 
-	splittedMessage := strings.Split(requestBody.Message, ":")
+	helpers.ListHandler(w, r, inUUID, requestBody)
 
-	//forward message to appropriate handler
-	switch splittedMessage[0] {
-	case "location":
-		if len(splittedMessage) == 1 { //handles this case--> "message":"location"
-			helpers.ReturnMessage(w, "You have entered incorrect format for your location. please enter location:<latitude>,<longitude>")
-			return
-		}
-		helpers.LocationHandler(w, r, inUUID, splittedMessage[1])
-		break
+}
 
-	case "details":
-		if len(splittedMessage) == 1 { //handles this case--> "message":"details"
-			helpers.ReturnMessage(w, "You have entered incorrect format for your place details query. please enter details:<place index>")
-			return
-		}
+//PlaceDetailsHandler: returns further details of a specific place
+func PlaceDetailsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
-		index, err := strconv.Atoi(splittedMessage[1])
-		if err != nil {
-			helpers.ReturnMessage(w, "You have entered incorrect format for your place details query. please enter details:<place index>")
-			return
-		}
-
-		helpers.DetailsHandler(w, r, inUUID, index-1)
-		break
-
-	default:
-		helpers.ListHandler(w, r, inUUID, requestBody.Message)
+	// extract UUID
+	inUUID, err := helpers.ExtractUUID(r)
+	if err != nil {
+		helpers.ReturnUnauthorized(w, "sorry, UUID not set, please access /welcome to receive an UUID")
+		return
 	}
+
+	//ensure UUID is in database
+	if _, err := datastructures.GetEntry(inUUID); err != nil {
+		helpers.ReturnUnauthorized(w, "sorry, UUID is not correct, please access /welcome to receive a new UUID")
+		return
+	}
+
+	placeID, ok := r.URL.Query()["place_id"]
+    if !ok || len(placeID) < 1 {
+		pretty.Printf("Url Param 'placeID' is missing")
+		helpers.ReturnMessage(w, "")
+		return
+    }
+
+	latitude, ok := r.URL.Query()["latitude"]
+    if !ok || len(latitude) < 1 {
+		pretty.Printf("Url Param 'latitude' is missing")
+		helpers.ReturnMessage(w, "")
+		return
+    }
+
+	longitude, ok := r.URL.Query()["longitude"]
+    if !ok || len(longitude) < 1 {
+		pretty.Printf("Url Param 'longitude' is missing")
+		helpers.ReturnMessage(w, "")
+		return
+    }
+	
+	helpers.DetailsHandler(w, r, placeID[0], latitude[0], longitude[0])
 }
 
 // MiscHandler : handler for all unchaught routes

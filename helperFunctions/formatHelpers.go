@@ -3,16 +3,14 @@ package helperFunctions
 import (
 	"strconv"
 
-	datastructures "vicinia/datastructures"
 	structures "vicinia/structures"
 
 	"github.com/kr/pretty"
-	"github.com/satori/go.uuid"
 	"googlemaps.github.io/maps"
 )
 
 //SimplifyList : returns the list of parameters which will be returned as a response message to the user's generic search
-func SimplifyList(uuid uuid.UUID, input []maps.PlacesSearchResult) ([]structures.PlaceListEntity, error) {
+func SimplifyList(latitude string, longitude string, input []maps.PlacesSearchResult) ([]structures.PlaceListEntity, error) {
 	output := make([]structures.PlaceListEntity, 5)
 
 	for i := 0; i < 5; i++ {
@@ -26,13 +24,7 @@ func SimplifyList(uuid uuid.UUID, input []maps.PlacesSearchResult) ([]structures
 			name = "not specified"
 		}
 
-		location, err := datastructures.GetLocationEntry(uuid) //location contains latitude and longitude
-		if err != nil {
-			pretty.Printf("fatal error: %s \n", err)
-			return []structures.PlaceListEntity{}, err
-		}
-
-		distance, err := GetDistance(location[0]+","+location[1], input[i].PlaceID)
+		distance, err := GetDistance(latitude+","+longitude, input[i].PlaceID)
 		if err != nil {
 			return nil, err
 		}
@@ -41,7 +33,7 @@ func SimplifyList(uuid uuid.UUID, input []maps.PlacesSearchResult) ([]structures
 			Name:     name,
 			Distance: distance,
 			Rating:   input[i].Rating,
-			ID:       i + 1,
+			ID:       input[i].PlaceID,
 		}
 	}
 
@@ -49,19 +41,13 @@ func SimplifyList(uuid uuid.UUID, input []maps.PlacesSearchResult) ([]structures
 }
 
 //SimplifyDetails : returns the list of parameters which will be returned as a response message to the user's specific query
-func SimplifyDetails(uuid uuid.UUID, input maps.PlaceDetailsResult) (structures.Place, error) {
+func SimplifyDetails(latitude string, longitude string, input maps.PlaceDetailsResult) (structures.Place, error) {
 	name := input.Name
 	if name == "" {
 		name = "not specified"
 	}
 
-	location, err := datastructures.GetLocationEntry(uuid) //location contains latitude and longitude
-	if err != nil {
-		pretty.Printf("fatal error: %s \n", err)
-		return structures.Place{}, err
-	}
-
-	distance, err := GetDistance(location[0]+","+location[1], input.PlaceID)
+	distance, err := GetDistance(latitude+","+longitude, input.PlaceID)
 	if err != nil {
 		pretty.Printf("fatal error: %s \n", err)
 		return structures.Place{}, err
@@ -99,6 +85,7 @@ func SimplifyDetails(uuid uuid.UUID, input maps.PlaceDetailsResult) (structures.
 	return output, nil
 }
 
+/*
 //formatList: returns a formatted message containing list of places
 func formatList(placesList []structures.PlaceListEntity, message string) structures.Message {
 	formattedMessage := ""
@@ -116,6 +103,7 @@ func formatList(placesList []structures.PlaceListEntity, message string) structu
 		Message: formattedMessage,
 	}
 }
+*/
 
 //formatDetails: returns a formatted message containing details of a specifice place
 func formatDetails(placeDetails structures.Place, message string) structures.Message {
