@@ -14,5 +14,5 @@ type PlaceListEntity struct {
 	Name     string  `json:"name"`
 	Distance string  `json:"distance"`
 	Rating   float32 `json:"rating"`
-	ID       int     `json:"id"`
+	ID       string     `json:"id"`
 }

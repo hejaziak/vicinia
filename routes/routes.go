@@ -33,4 +33,10 @@ var routes = Routes{
 		"/chat",
 		handlers.ChatHandler,
 	},
+	Route{
+		"placeDetails",
+		"GET",
+		"/placeDetails",
+		handlers.PlaceDetailsHandler,
+	},
 }

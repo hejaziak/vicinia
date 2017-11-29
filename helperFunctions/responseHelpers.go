@@ -41,6 +41,7 @@ func ListHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, request
 		ReturnMessage(w, "")
 		return
 	}
+
 	keyword := aiResponse.Params["keyword"].(string)
 	result, err := GetList(latitude, longitude, keyword)
 	if err != nil {
@@ -60,31 +61,34 @@ func ListHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, request
 		return
 	}
 
-	respondMessage := formatList(output, "To get detailed information about a specific place, please type its ID")
-	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
+	response := structures.PlaceList{
+		List: output,
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
 		pretty.Printf("fatal error: %s \n", err)
 		ReturnMessage(w, "")
 		return
 	}
 
-	UpdateSession(uuid, result)
 }
 
-func DetailsHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, index int) {
-	result, err := GetDetails(uuid, index)
+func DetailsHandler(w http.ResponseWriter, r *http.Request, placeID string, latitude string, longitude string) {
+	
+	result, err := GetDetails(placeID)
 	if err != nil {
 		ReturnMessage(w, "")
 		return
 	}
+	
+	output, err := SimplifyDetails(latitude, longitude, result)
 
-	output, err := SimplifyDetails(uuid, result)
-
-	respondMessage := formatDetails(output, "Any other place you want to search for ?")
-	if err := json.NewEncoder(w).Encode(respondMessage); err != nil {
+	if err := json.NewEncoder(w).Encode(output); err != nil {
 		pretty.Printf("fatal error: %s \n", err)
 		ReturnMessage(w, "")
 		return
 	}
+
 }
 
 //LocationHandler : sets cords in database
