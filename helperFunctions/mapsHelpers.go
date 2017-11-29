@@ -6,10 +6,7 @@ import (
 
 	globals "vicinia/globals"
 
-	datastructures "vicinia/datastructures"
-
 	"github.com/kr/pretty"
-	"github.com/satori/go.uuid"
 	"googlemaps.github.io/maps"
 )
 
@@ -43,13 +40,7 @@ func GetList(latitude float64, longitude float64, keyword string) ([]maps.Places
 }
 
 //GetDetails : returns detailed information about a specific place
-func GetDetails(uuid uuid.UUID, index int) (maps.PlaceDetailsResult, error) {
-	placeID, err := datastructures.GetPlace(uuid, index)
-	if err != nil {
-		pretty.Printf("fatal error: %s \n", err)
-		return maps.PlaceDetailsResult{}, err
-	}
-
+func GetDetails(placeID string) (maps.PlaceDetailsResult, error) {
 	req := &maps.PlaceDetailsRequest{
 		PlaceID: placeID,
 	}

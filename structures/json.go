@@ -16,6 +16,10 @@ type Message struct {
 type LatLongMessage struct {
 	Message string `json:"message"`
 	Latitude string `json:"latitude"`
-	Longitude string `json:"longitude"`
-	
+	Longitude string `json:"longitude"`	
+}
+
+type PlaceList struct {
+
+	List []PlaceListEntity `json:"list"`
 }
