@@ -21,5 +21,5 @@ type LatLongMessage struct {
 
 type PlaceList struct {
 
-	List []PlaceListEntity `json:"list"`
+	Message []PlaceListEntity `json:"message"`
 }
