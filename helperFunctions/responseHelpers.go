@@ -62,7 +62,7 @@ func ListHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, request
 	}
 
 	response := structures.PlaceList{
-		List: output,
+		Message: output,
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
