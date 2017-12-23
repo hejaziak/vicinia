@@ -1,18 +1,12 @@
 package structures
 
 type Place struct {
-	Name         string  `json:"name"`
-	Distance     string  `json:"distance"`
-	Rating       float32 `json:"rating"`
-	Type         string  `json:"type"`
-	Address      string  `json:"address"`
-	MobileNumber string  `json:"mobile_number"`
-	Link         string  `json:"link"`
-}
-
-type PlaceListEntity struct {
-	Name     string  `json:"name"`
-	Distance string  `json:"distance"`
-	Rating   float32 `json:"rating"`
-	ID       string     `json:"id"`
+	Name         string  `json:"name,omitempty"`
+	Distance     string  `json:"distance,omitempty"`
+	Rating       float32 `json:"rating,omitempty"`
+	ID           string  `json:"id,omitempty"`
+	Type         string  `json:"type,omitempty"`
+	Address      string  `json:"address,omitempty"`
+	MobileNumber string  `json:"mobile_number,omitempty"`
+	Link         string  `json:"link,omitempty"`
 }

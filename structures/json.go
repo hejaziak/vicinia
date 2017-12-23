@@ -4,22 +4,25 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-type UUIDMessage struct {
-	Message string    `json:"message"`
-	UUID    uuid.UUID `json:"uuid"`
-}
-
+//Message : json message
 type Message struct {
 	Message string `json:"message"`
 }
 
-type LatLongMessage struct {
-	Message string `json:"message"`
-	Latitude string `json:"latitude"`
-	Longitude string `json:"longitude"`	
+//UUIDMessage : json message including a uuid
+type UUIDMessage struct {
+	UUID    uuid.UUID `json:"uuid"`
+	Message string    `json:"message"`
 }
 
-type PlaceList struct {
+//LatLongMessage : json message including location
+type LatLongMessage struct {
+	Latitude  string `json:"latitude"`
+	Longitude string `json:"longitude"`
+	Message   string `json:"message"`
+}
 
-	Message []PlaceListEntity `json:"message"`
+//PlaceListMessage : json message including an array of lists
+type PlaceListMessage struct {
+	Message []Place `json:"message"`
 }

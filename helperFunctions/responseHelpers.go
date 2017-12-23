@@ -3,8 +3,8 @@ package helperFunctions
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 	"strconv"
+	"strings"
 
 	structures "vicinia/structures"
 
@@ -61,7 +61,7 @@ func ListHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, request
 		return
 	}
 
-	response := structures.PlaceList{
+	response := structures.PlaceListMessage{
 		Message: output,
 	}
 
@@ -73,14 +73,15 @@ func ListHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, request
 
 }
 
+//DetailsHandler : returns details about a place, given the placeID
 func DetailsHandler(w http.ResponseWriter, r *http.Request, placeID string, latitude string, longitude string) {
-	
+
 	result, err := GetDetails(placeID)
 	if err != nil {
 		ReturnMessage(w, "")
 		return
 	}
-	
+
 	output, err := SimplifyDetails(latitude, longitude, result)
 
 	if err := json.NewEncoder(w).Encode(output); err != nil {
