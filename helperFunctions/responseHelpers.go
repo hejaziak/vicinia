@@ -92,22 +92,6 @@ func DetailsHandler(w http.ResponseWriter, r *http.Request, placeID string, lati
 
 }
 
-//LocationHandler : sets cords in database
-func LocationHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, location string) {
-	if err := CheckLocationFormat(location); err != nil {
-		pretty.Printf("fatal error: %s \n", err)
-		ReturnMessage(w, "You have entered incorrect format for your location. please enter location:<latitude>,<longitude>")
-		return
-	}
-
-	if err := SetLocation(uuid, location); err != nil {
-		ReturnMessage(w, "You have already entered your location successfully")
-		return
-	}
-
-	ReturnMessage(w, "You're location is now set, where do you want to go today ?")
-}
-
 //ReturnMessage : returns a message
 func ReturnMessage(w http.ResponseWriter, message string) {
 	w.Header().Set("Content-Type", "application/json")

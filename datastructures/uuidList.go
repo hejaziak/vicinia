@@ -8,20 +8,20 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-var sessions map[uuid.UUID][]string
+var sessions map[uuid.UUID]bool
 
 //InitSessions : intializes the sessions map
 func InitSessions() {
-	sessions = make(map[uuid.UUID][]string)
+	sessions = make(map[uuid.UUID]bool)
 }
 
 //CreateEntry : creates new entry in sessions map
 func CreateEntry(key uuid.UUID) error {
-	if test := sessions[key]; len(test) > 0 {
+	if test := sessions[key]; test == true {
 		return errors.New("UUID already exists")
 	}
 
-	sessions[key] = make([]string, 5)
+	sessions[key] = true
 
 	time.AfterFunc(time.Duration(24*time.Hour), func() {
 		if err := DeleteEntry(key); err != nil {
@@ -33,44 +33,13 @@ func CreateEntry(key uuid.UUID) error {
 }
 
 //GetEntry : returns an entry in session's map
-func GetEntry(key uuid.UUID) ([]string, error) {
+func GetEntry(key uuid.UUID) (bool, error) {
 	test := sessions[key]
-	if len(test) <= 0 {
-		return nil, errors.New("UUID doesn't exists")
+	if test == false {
+		return false, errors.New("UUID doesn't exists")
 	}
 
 	return test, nil
-}
-
-//GetPlace : returns a place id from an entry in session's map
-func GetPlace(key uuid.UUID, index int) (string, error) {
-	places, err := GetEntry(key)
-
-	if err != nil {
-		return "", err
-	}
-
-	if index < 0 || index > 4 {
-		return "", errors.New("index out of bounds")
-	}
-
-	test := places[index]
-
-	if test == "" {
-		return "", errors.New("record not initialized")
-	}
-
-	return test, nil
-}
-
-//UpdateEntry : update a entry in session's map
-func UpdateEntry(key uuid.UUID, latlang []string) error {
-	if _, err := GetEntry(key); err != nil {
-		return err
-	}
-
-	sessions[key] = latlang
-	return nil
 }
 
 //DeleteEntry : deletes a entry in session's map
@@ -80,6 +49,7 @@ func DeleteEntry(key uuid.UUID) error {
 	}
 
 	delete(sessions, key)
+
 	return nil
 }
 

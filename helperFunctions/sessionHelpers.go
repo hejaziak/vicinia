@@ -8,7 +8,6 @@ import (
 
 	"github.com/kr/pretty"
 	"github.com/satori/go.uuid"
-	"googlemaps.github.io/maps"
 )
 
 //ExtractUUID : returns uuid wich is extraced from the header of the request
@@ -31,24 +30,4 @@ func ExtractUUID(r *http.Request) (uuid.UUID, error) {
 	}
 
 	return inUUID, nil
-}
-
-//UpdateSession : updates the last places returned to the user
-func UpdateSession(UUID uuid.UUID, input []maps.PlacesSearchResult) error {
-	placeIDs := make([]string, 5)
-
-	for i := 0; i < 5; i++ {
-		if i >= len(input) {
-			break
-		}
-
-		placeIDs[i] = input[i].PlaceID
-	}
-
-	if err := datastructures.UpdateEntry(UUID, placeIDs); err != nil {
-		pretty.Printf("fatal error: %s \n", err)
-		return err
-	}
-
-	return nil
 }
