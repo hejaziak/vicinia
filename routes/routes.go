@@ -36,7 +36,7 @@ var routes = Routes{
 	Route{
 		"placeDetails",
 		"GET",
-		"/placeDetails",
+		"/placeDetails/{placeID}/{latitude}/{longitude}",
 		handlers.PlaceDetailsHandler,
 	},
 }

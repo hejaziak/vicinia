@@ -8,6 +8,7 @@ import (
 	helpers "vicinia/helperFunctions"
 	structures "vicinia/structures"
 
+	"github.com/gorilla/mux"
 	"github.com/kr/pretty"
 	"github.com/satori/go.uuid"
 )
@@ -75,7 +76,7 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-//PlaceDetailsHandler: returns further details of a specific place
+//PlaceDetailsHandler : returns further details of a specific place
 func PlaceDetailsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -92,28 +93,29 @@ func PlaceDetailsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	placeID, ok := r.URL.Query()["place_id"]
-    if !ok || len(placeID) < 1 {
+	vars := mux.Vars(r)
+	placeID := vars["placeID"]
+	if len(placeID) < 1 {
 		pretty.Printf("Url Param 'placeID' is missing")
 		helpers.ReturnMessage(w, "")
 		return
-    }
+	}
 
-	latitude, ok := r.URL.Query()["latitude"]
-    if !ok || len(latitude) < 1 {
+	latitude := vars["latitude"]
+	if len(latitude) < 1 {
 		pretty.Printf("Url Param 'latitude' is missing")
 		helpers.ReturnMessage(w, "")
 		return
-    }
+	}
 
-	longitude, ok := r.URL.Query()["longitude"]
-    if !ok || len(longitude) < 1 {
+	longitude := vars["longitude"]
+	if len(longitude) < 1 {
 		pretty.Printf("Url Param 'longitude' is missing")
 		helpers.ReturnMessage(w, "")
 		return
-    }
-	
-	helpers.DetailsHandler(w, r, placeID[0], latitude[0], longitude[0])
+	}
+
+	helpers.DetailsHandler(w, r, placeID, latitude, longitude)
 }
 
 // MiscHandler : handler for all unchaught routes
