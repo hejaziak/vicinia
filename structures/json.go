@@ -24,5 +24,5 @@ type LatLongMessage struct {
 
 //PlaceListMessage : json message including an array of lists
 type PlaceListMessage struct {
-	Message []Place `json:"message"`
+	Message []Place `json:"list"`
 }
