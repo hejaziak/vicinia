@@ -2,9 +2,9 @@ package globals
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
-	"github.com/kr/pretty"
 	"github.com/satori/go.uuid"
 )
 
@@ -55,9 +55,9 @@ func DeleteEntry(key uuid.UUID) error {
 
 //PrintMap : displays session's contents
 func PrintMap() {
-	pretty.Println("Sessions -Map ======================")
+	fmt.Println("Sessions - Map ======================")
 	for key, value := range sessions {
-		pretty.Println("Key:", key, "Value:", value)
+		fmt.Println("Key:", key, ", Value:", value)
 	}
-	pretty.Println("====================================")
+	fmt.Println("=====================================")
 }
