@@ -3,8 +3,8 @@ package helperFunctions
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 	"strconv"
+	"strings"
 
 	structures "vicinia/structures"
 
@@ -61,7 +61,7 @@ func ListHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, request
 		return
 	}
 
-	response := structures.PlaceList{
+	response := structures.PlaceListMessage{
 		Message: output,
 	}
 
@@ -73,14 +73,15 @@ func ListHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, request
 
 }
 
+//DetailsHandler : returns details about a place, given the placeID
 func DetailsHandler(w http.ResponseWriter, r *http.Request, placeID string, latitude string, longitude string) {
-	
+
 	result, err := GetDetails(placeID)
 	if err != nil {
 		ReturnMessage(w, "")
 		return
 	}
-	
+
 	output, err := SimplifyDetails(latitude, longitude, result)
 
 	if err := json.NewEncoder(w).Encode(output); err != nil {
@@ -89,22 +90,6 @@ func DetailsHandler(w http.ResponseWriter, r *http.Request, placeID string, lati
 		return
 	}
 
-}
-
-//LocationHandler : sets cords in database
-func LocationHandler(w http.ResponseWriter, r *http.Request, uuid uuid.UUID, location string) {
-	if err := CheckLocationFormat(location); err != nil {
-		pretty.Printf("fatal error: %s \n", err)
-		ReturnMessage(w, "You have entered incorrect format for your location. please enter location:<latitude>,<longitude>")
-		return
-	}
-
-	if err := SetLocation(uuid, location); err != nil {
-		ReturnMessage(w, "You have already entered your location successfully")
-		return
-	}
-
-	ReturnMessage(w, "You're location is now set, where do you want to go today ?")
 }
 
 //ReturnMessage : returns a message

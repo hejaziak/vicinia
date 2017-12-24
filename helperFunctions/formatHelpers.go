@@ -1,8 +1,6 @@
 package helperFunctions
 
 import (
-	"strconv"
-
 	structures "vicinia/structures"
 
 	"github.com/kr/pretty"
@@ -10,8 +8,8 @@ import (
 )
 
 //SimplifyList : returns the list of parameters which will be returned as a response message to the user's generic search
-func SimplifyList(latitude string, longitude string, input []maps.PlacesSearchResult) ([]structures.PlaceListEntity, error) {
-	output := make([]structures.PlaceListEntity, 5)
+func SimplifyList(latitude string, longitude string, input []maps.PlacesSearchResult) ([]structures.Place, error) {
+	output := make([]structures.Place, 5)
 
 	for i := 0; i < 5; i++ {
 		if i >= len(input) {
@@ -29,7 +27,7 @@ func SimplifyList(latitude string, longitude string, input []maps.PlacesSearchRe
 			return nil, err
 		}
 
-		output[i] = structures.PlaceListEntity{
+		output[i] = structures.Place{
 			Name:     name,
 			Distance: distance,
 			Rating:   input[i].Rating,
@@ -83,41 +81,4 @@ func SimplifyDetails(latitude string, longitude string, input maps.PlaceDetailsR
 		Link:         url,
 	}
 	return output, nil
-}
-
-/*
-//formatList: returns a formatted message containing list of places
-func formatList(placesList []structures.PlaceListEntity, message string) structures.Message {
-	formattedMessage := ""
-	for _, place := range placesList {
-		formattedMessage +=
-			"Name: " + place.Name + " <br/> " +
-				"Distance: " + place.Distance + " <br/> " +
-				"Rating: " + strconv.FormatFloat(float64(place.Rating), 'f', -1, 32) + " <br/> " +
-				"ID: " + strconv.Itoa(place.ID) + " <br/> <br/> "
-	}
-
-	formattedMessage += message
-
-	return structures.Message{
-		Message: formattedMessage,
-	}
-}
-*/
-
-//formatDetails: returns a formatted message containing details of a specifice place
-func formatDetails(placeDetails structures.Place, message string) structures.Message {
-	formattedMessage :=
-		"Name: " + placeDetails.Name + " <br/> " +
-			"Distance: " + placeDetails.Distance + " <br/> " +
-			"Rating: " + strconv.FormatFloat(float64(placeDetails.Rating), 'f', -1, 32) + " <br/> " +
-			"Type: " + placeDetails.Type + " <br/> " +
-			"Address: " + placeDetails.Address + " <br/> " +
-			"MobileNumber: " + placeDetails.MobileNumber + " <br/> " +
-			"Link: <a href= " + placeDetails.Link + " > google maps </a>" + " <br/> <br/> " +
-			message
-
-	return structures.Message{
-		Message: formattedMessage,
-	}
 }

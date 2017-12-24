@@ -15,7 +15,6 @@ import _ "github.com/joho/godotenv/autoload"
 
 func main() {
 	datastructures.InitSessions()
-	datastructures.InitLocations()
 
 	mapsKey := os.Getenv("GoogleMapsAPI")
 	global.InitMapClient(mapsKey)
